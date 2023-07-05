@@ -4,6 +4,7 @@ import com.byt.pojo.TagKafkaInfo;
 import com.google.common.collect.Sets;
 import org.apache.flink.util.OutputTag;
 
+import java.awt.image.Kernel;
 import java.util.*;
 
 /**
@@ -43,6 +44,23 @@ public class SideOutPutTagUtil {
         }
         return sideOutputTags;
     }
+
+
+    public static HashMap<String, OutputTag<TagKafkaInfo>> getSideOutPutTags() {
+        HashMap<String, OutputTag<TagKafkaInfo>> sideOutputTags = new HashMap<>();
+        for (String side : twoParamTimeCal) {
+            sideOutputTags.put(side,new OutputTag<TagKafkaInfo>(side){});
+        }
+        for (String side : twoParamCal) {
+            sideOutputTags.put(side,new OutputTag<TagKafkaInfo>(side){});
+        }
+        for (String side : oneParamCal) {
+            sideOutputTags.put(side,new OutputTag<TagKafkaInfo>(side){});
+        }
+        return sideOutputTags;
+    }
+
+
 
     /**
      * 过滤不规则参数
@@ -111,16 +129,21 @@ public class SideOutPutTagUtil {
 
 
     public static void main(String[] args) {
-        HashSet<String> strings = new HashSet<>();
-        strings.add("AVG_KF_MAX#5s,5s|1m,1m|3s,2s");
-        strings.add("MAX#5s,");
-        strings.add("PSEQ#100s,50s");
-        strings.add("KF#0.001,10000");
-        strings.add("KF#5s,5s");
-        strings.add("MIN#");
-        strings.add("AVG#1m,7s");
-        strings.add("AVG_KF_RAW_KF#5m,5m|1,|N|5m,5m");
-        System.out.println(checkParams(strings));
+//        HashSet<String> strings = new HashSet<>();
+//        strings.add("AVG_KF_MAX#5s,5s|1m,1m|3s,2s");
+//        strings.add("MAX#5s,");
+//        strings.add("PSEQ#100s,50s");
+//        strings.add("KF#0.001,10000");
+//        strings.add("KF#5s,5s");
+//        strings.add("MIN#");
+//        strings.add("AVG#1m,7s");
+//        strings.add("AVG_KF_RAW_KF#5m,5m|1,|N|5m,5m");
+        HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = getSideOutPutTags();
+        Iterator<String> iterator = sideOutPutTags.keySet().iterator();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            System.out.println(key+"----->"+sideOutPutTags.get(key));
+        }
         //System.out.println(replaceStr("1000s"));
         //System.out.println("10s".split("s"));
     }

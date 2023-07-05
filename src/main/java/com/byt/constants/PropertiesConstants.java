@@ -55,6 +55,12 @@ public class PropertiesConstants {
 
 
     public static final String SENT_TIME = "sent.time";
+    public static final String AVG = "AVG";
+    public static final String MAX = "MAX";
+    public static final String MIN = "MIN";
+    public static final String LAST = "LAST";
+    public static final String MEDIAN = "MEDIAN";
+
 
 
 
