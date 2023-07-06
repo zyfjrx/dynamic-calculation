@@ -72,7 +72,7 @@ public class DynamicSlidingEventTimeWindows extends WindowAssigner<Object, TimeW
 
 
     public String toString() {
-        return "DynamicEventTimeWindows(" + this.size + ", " + this.slide + ")";
+        return "DynamicSlidingEventTimeWindows(" + this.size + ", " + this.slide + ")";
     }
 
     public static DynamicSlidingEventTimeWindows of(Time size, Time slide) {

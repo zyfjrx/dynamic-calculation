@@ -66,7 +66,7 @@ public class DynamicSlidingProcessingTimeWindows extends WindowAssigner<Object, 
 
 
     public String toString() {
-        return "DynamicProcessingTimeWindows(" + this.size + ", " + this.slide + ")";
+        return "DynamicSlidingProcessingTimeWindows(" + this.size + ", " + this.slide + ")";
     }
 
     public static DynamicSlidingProcessingTimeWindows of(Time size, Time slide) {
