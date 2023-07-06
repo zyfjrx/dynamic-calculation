@@ -41,6 +41,7 @@ public class TagKafkaInfo {
     private Integer totalIndex; // 算子链总长度
     private Integer currIndex; // 当前计算位置
     private String currCal; // 当前计算类型
+    private Integer status; // 当前计算类型
 
     public Long getTimestamp() {
         if (this.timestamp == null && this.time != null) {
@@ -65,33 +66,4 @@ public class TagKafkaInfo {
         return Objects.hash(name, time, value, topic, bytName);
     }
 
-    @Override
-    public String toString() {
-        return "TagKafkaInfo{" +
-                "name='" + name + '\'' +
-                ", time='" + time + '\'' +
-                ", value=" + value +
-                ", topic='" + topic + '\'' +
-                ", tagType=" + tagType +
-                ", bytName='" + bytName + '\'' +
-                ", strValue='" + strValue + '\'' +
-                ", timestamp=" + timestamp +
-                ", isNormal=" + isNormal +
-                ", calculateType='" + calculateType + '\'' +
-                ", calculateParam='" + calculateParam + '\'' +
-                ", taskName='" + taskName + '\'' +
-                ", lineId=" + lineId +
-                ", winSize='" + winSize + '\'' +
-                ", winSlide='" + winSlide + '\'' +
-                ", n=" + n +
-                ", a=" + a +
-                ", lowerInt=" + lowerInt +
-                ", upperInt=" + upperInt +
-                ", dt=" + dt +
-                ", R=" + R +
-                ", totalIndex=" + totalIndex +
-                ", currIndex=" + currIndex +
-                ", currCal='" + currCal + '\'' +
-                '}';
-    }
 }

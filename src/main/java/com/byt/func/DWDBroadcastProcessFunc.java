@@ -1,5 +1,6 @@
 package com.byt.func;
 
+import akka.actor.TimerSchedulerImpl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.byt.pojo.TagKafkaInfo;
@@ -7,9 +8,8 @@ import com.byt.pojo.TagProperties;
 import com.byt.utils.BytTagUtil;
 import com.byt.utils.FormulaTag;
 import com.byt.utils.QlexpressUtil;
-import org.apache.flink.api.common.state.BroadcastState;
-import org.apache.flink.api.common.state.MapStateDescriptor;
-import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
+import org.apache.flink.api.common.state.*;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
@@ -26,34 +26,36 @@ public class DWDBroadcastProcessFunc extends BroadcastProcessFunction<List<TagKa
     private MapStateDescriptor<String, TagProperties> mapStateDescriptor;
     //private String startjobs;
     private Map<String, TagProperties> bytInfoCache;
-    private Set<String> keyInfoList;
     private Set<String> hasTags;
     private String jobName;
+    private ListState<String> keyStates;
 
-/*    public DWDBroadcastProcessFunc(MapStateDescriptor<String, TagProperties> mapStateDescriptor, String taskName) {
-        this.mapStateDescriptor = mapStateDescriptor;
-        this.taskName = taskName;
-    }*/
+
+
 
     public DWDBroadcastProcessFunc(MapStateDescriptor<String, TagProperties> mapStateDescriptor) {
         this.mapStateDescriptor = mapStateDescriptor;
-        //this.startjobs = startJobs;
     }
 
 
     @Override
     public void open(Configuration parameters) throws Exception {
-
-
         bytInfoCache = new HashMap<>(1024);
         hasTags = new HashSet<>();
-        keyInfoList = new HashSet<>();
+        keyStates = getRuntimeContext().getListState(
+                new ListStateDescriptor<String>(
+                        "key-state",
+                        Types.STRING
+                )
+        );
     }
 
     @Override
     public void processElement(List<TagKafkaInfo> value, BroadcastProcessFunction<List<TagKafkaInfo>, String, Tuple2<String, List<TagKafkaInfo>>>.ReadOnlyContext ctx, Collector<Tuple2<String, List<TagKafkaInfo>>> out) throws Exception {
         ReadOnlyBroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
-        for (String keyInfo : keyInfoList) {
+        Iterator<String> iterator = keyStates.get().iterator();
+        while (iterator.hasNext()){
+            String keyInfo = iterator.next();
             TagProperties tagProperties = broadcastState.get(keyInfo);
             // 保存所有配置信息
             bytInfoCache.put(keyInfo, tagProperties);
@@ -78,16 +80,14 @@ public class DWDBroadcastProcessFunc extends BroadcastProcessFunction<List<TagKa
 
         // 获取并解析数据，方便主流操作
         JSONObject jsonObject = JSON.parseObject(value);
-        //TagProperties before = JSON.parseObject(jsonObject.getString("before"), TagProperties.class);
         TagProperties after = JSON.parseObject(jsonObject.getString("after"), TagProperties.class);
         BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
         String op = jsonObject.getString("op");
         String afterKeyInfo = after.byt_name + after.task_name;
-
-
         //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
-        if(!op.equals("d") && after.status == 1){
-            keyInfoList.add(afterKeyInfo.trim());
+        if (!op.equals("d") && after.status == 1) {
+            //keyInfoList.add(afterKeyInfo.trim());
+            keyStates.add(afterKeyInfo.trim());
             if (after.tag_name.contains(FormulaTag.START)) {
                 Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name.trim());
                 hasTags.addAll(tagSet);
@@ -95,15 +95,6 @@ public class DWDBroadcastProcessFunc extends BroadcastProcessFunction<List<TagKa
                 hasTags.add(after.tag_name.trim());
             }
             broadcastState.put(afterKeyInfo, after);
-        }else if (after.status == 0){
-            keyInfoList.remove(afterKeyInfo);
-            if (after.tag_name.contains(FormulaTag.START)) {
-                Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name);
-                hasTags.removeAll(tagSet);
-            } else {
-                hasTags.remove(after.tag_name);
-            }
-            broadcastState.remove(afterKeyInfo);
         }
 //        if (op.equals("d")) {
 //            String beforeKeyInfo = before.byt_name + before.task_name;
@@ -185,6 +176,6 @@ public class DWDBroadcastProcessFunc extends BroadcastProcessFunction<List<TagKa
 */
 
         System.out.println("nameList>>>>>>" + hasTags);
-        System.out.println("keylist:>>>>" + keyInfoList);
+        System.out.println("keylist:>>>>" + keyStates);
     }
 }

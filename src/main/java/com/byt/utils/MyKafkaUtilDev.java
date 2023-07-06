@@ -68,23 +68,6 @@ public class MyKafkaUtilDev {
                 new ProtoKafkaDeserialization(),
                 properties
         );
-        // 分配水位线和提取时间戳
-//        kafkaConsumer
-//               // .setStartFromTimestamp(TimeUtil.getStartTime(startTime))
-//                .assignTimestampsAndWatermarks(
-//                        WatermarkStrategy.<List<TagKafkaInfo>>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
-//                                .withIdleness(Duration.ofSeconds(10L))
-//                                .withTimestampAssigner(new SerializableTimestampAssigner<List<TagKafkaInfo>>() {
-//                                    @Override
-//                                    public long extractTimestamp(List<TagKafkaInfo> list, long l) {
-//                                        if (list.size() > 0) {
-//                                            return list.get(0).getTimestamp();
-//                                        } else {
-//                                            return 1606710000000L;
-//                                        }
-//                                    }
-//                                })
-//                );
         return kafkaConsumer;
     }
 

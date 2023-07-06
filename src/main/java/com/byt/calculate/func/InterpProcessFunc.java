@@ -8,23 +8,21 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 
 /**
- * @title: MIN算子函数
+ * @title: 最接近计算时刻的数据点取值
  * @author: zhangyf
- * @date: 2023/7/5 14:38
+ * @date: 2023/7/10 14:38
  **/
-public class MinProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow> {
+public class InterpProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow> {
     private transient SimpleDateFormat sdf;
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
 
-    public MinProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {
+    public InterpProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {
         this.dwdOutPutTag = dwdOutPutTag;
     }
 
@@ -44,19 +42,19 @@ public class MinProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafka
         arrayList.sort(new Comparator<TagKafkaInfo>() {
             @Override
             public int compare(TagKafkaInfo o1, TagKafkaInfo o2) {
-                return o2.getValue().intValue() - o1.getValue().intValue();
+                return (int) (o1.getTimestamp() - o2.getTimestamp());
             }
         });
         TagKafkaInfo tagKafkaInfo = arrayList.get(arrayList.size() - 1);
-        arrayList.clear();
         tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
         tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
-        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()) {
+        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()){
             tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
-            context.output(dwdOutPutTag, tagKafkaInfo);
-        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()) {
+            context.output(dwdOutPutTag,tagKafkaInfo);
+        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()){
             tagKafkaInfo.setCurrCal("over");
             out.collect(tagKafkaInfo);
         }
+        arrayList.clear();
     }
 }

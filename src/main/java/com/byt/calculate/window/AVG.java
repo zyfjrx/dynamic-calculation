@@ -11,7 +11,6 @@ import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.SlidingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
@@ -46,7 +45,7 @@ public class AVG implements Transform {
                         return Tuple7.of(r.getName(), r.getTopic(), r.getBytName(), r.getCalculateParam(), r.getCalculateType(), r.getLineId(), r.getTaskName());
                     }
                 })
-                .window(DynamicProcessingTimeWindows.of(Time.seconds(10L),Time.seconds(1L)))
+                .window(DynamicSlidingEventTimeWindows.of(Time.seconds(10L),Time.seconds(1L)))
                 .aggregate(
                         new AvgAgg(),
                         new AvgResult()

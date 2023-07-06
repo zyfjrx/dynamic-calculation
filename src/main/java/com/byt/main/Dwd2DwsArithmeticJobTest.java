@@ -1,11 +1,13 @@
 package com.byt.main;
 
-import com.byt.calculate.DynamicProcessingTimeWindows;
+import com.byt.calculate.DynamicSlidingEventTimeWindows;
 import com.byt.calculate.func.*;
 import com.byt.constants.PropertiesConstants;
 import com.byt.func.*;
 import com.byt.pojo.TagKafkaInfo;
 import com.byt.utils.*;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -14,6 +16,7 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import java.time.Duration;
 import java.util.HashMap;
 
 /**
@@ -51,23 +54,21 @@ public class Dwd2DwsArithmeticJobTest {
                         ConfigManager.getProperty("kafka.dwd.topic"),
                         "dwddws_" + System.currentTimeMillis())
                 )
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
+                                .withTimestampAssigner(new SerializableTimestampAssigner<TagKafkaInfo>() {
+                                    @Override
+                                    public long extractTimestamp(TagKafkaInfo tagKafkaInfo, long l) {
+                                        return tagKafkaInfo.getTimestamp();
+                                    }
+                                })
+                )
                 .process(new ProcessFunction<TagKafkaInfo, TagKafkaInfo>() {
                     @Override
                     public void processElement(TagKafkaInfo value, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-                        if (sideOutPutTags.containsKey(value.getCurrCal())){
-                            ctx.output(sideOutPutTags.get(value.getCurrCal()),value);
+                        if (sideOutPutTags.containsKey(value.getCurrCal())) {
+                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
                         }
-//                        if ("AVG".equals(value.getCurrCal())) {
-//                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
-//                        } else if ("MAX".equals(value.getCurrCal())) {
-//                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
-//                        } else if ("MIN".equals(value.getCurrCal())) {
-//                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
-//                        } else if ("MEDIAN".equals(value.getCurrCal())) {
-//                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
-//                        } else if ("LAST".equals(value.getCurrCal())) {
-//                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
-//                        }
                     }
                 });
 
@@ -78,7 +79,7 @@ public class Dwd2DwsArithmeticJobTest {
         DataStream<TagKafkaInfo> lastDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.LAST));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultAVGDS = avgDs.keyBy(r -> r.getBytName())
-                .window(DynamicProcessingTimeWindows.of(Time.seconds(10L), Time.seconds(1L)))
+                .window(DynamicSlidingEventTimeWindows.of())
                 .process(new AvgProcessFunc(dwdOutPutTag));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs
@@ -86,15 +87,15 @@ public class Dwd2DwsArithmeticJobTest {
                 .process(new LastProcessFunc(dwdOutPutTag));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMAXDS = maxDs.keyBy(r -> r.getBytName())
-                .window(DynamicProcessingTimeWindows.of(Time.seconds(10L), Time.seconds(1L)))
+                .window(DynamicSlidingEventTimeWindows.of())
                 .process(new MaxProcessFunc(dwdOutPutTag));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMINDS = minDs.keyBy(r -> r.getBytName())
-                .window(DynamicProcessingTimeWindows.of(Time.seconds(10L), Time.seconds(1L)))
+                .window(DynamicSlidingEventTimeWindows.of())
                 .process(new MinProcessFunc(dwdOutPutTag));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMEDIANDS = medianDs.keyBy(r -> r.getBytName())
-                .window(DynamicProcessingTimeWindows.of(Time.seconds(10L), Time.seconds(1L)))
+                .window(DynamicSlidingEventTimeWindows.of())
                 .process(new MedianProcessFunc(dwdOutPutTag));
 
 
