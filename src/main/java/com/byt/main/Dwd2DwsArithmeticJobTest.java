@@ -28,24 +28,11 @@ public class Dwd2DwsArithmeticJobTest {
 
     public static void main(String[] args) throws Exception {
         // TODO 0.获取执行环境和相关参数
-        //StreamExecutionEnvironment env = StreamEnvUtil.getEnv("dwd2dws");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = SideOutPutTagUtil.getSideOutPutTags();
 
-//        OutputTag<TagKafkaInfo> avgOutPutTag = new OutputTag<TagKafkaInfo>("side-output-avg") {
-//        };
-//        OutputTag<TagKafkaInfo> lastOutPutTag = new OutputTag<TagKafkaInfo>("side-output-last") {
-//        };
-//        OutputTag<TagKafkaInfo> maxOutPutTag = new OutputTag<TagKafkaInfo>("side-output-max") {
-//        };
-//        OutputTag<TagKafkaInfo> minOutPutTag = new OutputTag<TagKafkaInfo>("side-output-min") {
-//        };
-//        OutputTag<TagKafkaInfo> MedianOutPutTag = new OutputTag<TagKafkaInfo>("side-output-median") {
-//        };
-//        OutputTag<TagKafkaInfo> dwdOutPutTag = new OutputTag<TagKafkaInfo>("side-output-dwd") {
-//        };
         OutputTag<TagKafkaInfo> dwdOutPutTag = new OutputTag<TagKafkaInfo>("side-output-dwd") {
         };
         SingleOutputStreamOperator<TagKafkaInfo> tagKafkaInfoDataStreamSource = env
@@ -76,14 +63,19 @@ public class Dwd2DwsArithmeticJobTest {
         DataStream<TagKafkaInfo> maxDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.MAX));
         DataStream<TagKafkaInfo> minDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.MIN));
         DataStream<TagKafkaInfo> medianDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.MEDIAN));
+        DataStream<TagKafkaInfo> cvDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.CV));
+        DataStream<TagKafkaInfo> dejumpDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.DEJUMP));
+        DataStream<TagKafkaInfo> fofDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.FOF));
+        DataStream<TagKafkaInfo> interpDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.INTERP));
         DataStream<TagKafkaInfo> lastDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.LAST));
+        DataStream<TagKafkaInfo> trendDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.TREND));
+        DataStream<TagKafkaInfo> varDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.VAR));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultAVGDS = avgDs.keyBy(r -> r.getBytName())
                 .window(DynamicSlidingEventTimeWindows.of())
                 .process(new AvgProcessFunc(dwdOutPutTag));
 
-        SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs
-                .keyBy(r -> r.getBytName())
+        SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs.keyBy(r -> r.getBytName())
                 .process(new LastProcessFunc(dwdOutPutTag));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMAXDS = maxDs.keyBy(r -> r.getBytName())
@@ -98,6 +90,26 @@ public class Dwd2DwsArithmeticJobTest {
                 .window(DynamicSlidingEventTimeWindows.of())
                 .process(new MedianProcessFunc(dwdOutPutTag));
 
+        SingleOutputStreamOperator<TagKafkaInfo> resultCVDS = cvDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of())
+                .process(new CvProcessFunc(dwdOutPutTag));
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultDEJUMP = dejumpDs.keyBy(r -> r.getBytName())
+                .process(new DejumpProcessFunc(dwdOutPutTag));
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultFOFDS = fofDs.keyBy(r -> r.getBytName())
+                .process(new FofProcessFunc(dwdOutPutTag));
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultINTERPDS = interpDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of())
+                .process(new InterpProcessFunc(dwdOutPutTag));
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultTRENDDS = trendDs.keyBy(r -> r.getBytName())
+                .process(new TrendProcessFunc(dwdOutPutTag));
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultVARDS = trendDs.keyBy(r -> r.getBytName())
+                .process(new VarProcessFunc(dwdOutPutTag));
+
 
         // 获取还需进一步计算的数据
         DataStream<TagKafkaInfo> sideOutputAVG = resultAVGDS.getSideOutput(dwdOutPutTag);
@@ -105,8 +117,13 @@ public class Dwd2DwsArithmeticJobTest {
         DataStream<TagKafkaInfo> sideOutputMIN = resultMINDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputMEDIAN = resultMEDIANDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputLAST = resultLASTDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputCV = resultCVDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputDEJUMP = resultDEJUMP.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputFOF = resultFOFDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputTREND = resultTRENDDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputVAR = resultVARDS.getSideOutput(dwdOutPutTag);
         sideOutputAVG
-                .union(sideOutputMAX, sideOutputMIN, sideOutputLAST, sideOutputMEDIAN)
+                .union(sideOutputMAX, sideOutputMIN, sideOutputLAST, sideOutputMEDIAN,sideOutputCV,sideOutputDEJUMP,sideOutputFOF,sideOutputTREND,sideOutputVAR)
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .print("dwd>>>");
         sideOutputAVG
@@ -115,7 +132,8 @@ public class Dwd2DwsArithmeticJobTest {
                 .addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC_PREFIX)));
 
         // union计算完成数据
-        resultAVGDS.union(resultMAXDS, resultMINDS, resultLASTDS, resultMEDIANDS)
+        resultAVGDS
+                .union(resultMAXDS, resultMINDS, resultLASTDS, resultMEDIANDS,resultCVDS,resultDEJUMP,resultFOFDS,resultTRENDDS,resultVARDS)
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .print("dws:>");
         resultAVGDS.union(resultMAXDS, resultMINDS, resultLASTDS)

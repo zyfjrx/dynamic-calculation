@@ -1,5 +1,6 @@
 package com.byt.calculate.func;
 
+import com.byt.calculate.TStream;
 import com.byt.pojo.TagKafkaInfo;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -18,7 +19,7 @@ import java.text.SimpleDateFormat;
  * @author: zhangyifan
  * @date: 2022/8/28 13:47
  */
-public class FofProcessFunc extends KeyedProcessFunction<Tuple3<String,String,Integer>,TagKafkaInfo, TagKafkaInfo> {
+public class FofProcessFunc extends KeyedProcessFunction<String,TagKafkaInfo, TagKafkaInfo> {
     private ValueState<BigDecimal> lastFirstOrder;
     private SimpleDateFormat sdf;
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
@@ -39,7 +40,7 @@ public class FofProcessFunc extends KeyedProcessFunction<Tuple3<String,String,In
     }
 
     @Override
-    public void processElement(TagKafkaInfo tagKafkaInfo, KeyedProcessFunction<Tuple3<String,String, Integer>, TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
+    public void processElement(TagKafkaInfo tagKafkaInfo, KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
         BigDecimal a = new BigDecimal(tagKafkaInfo.getA());
         if (lastFirstOrder.value() == null) {
             lastFirstOrder.update(tagKafkaInfo.getValue());

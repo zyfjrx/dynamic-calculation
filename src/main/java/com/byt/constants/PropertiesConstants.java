@@ -60,6 +60,12 @@ public class PropertiesConstants {
     public static final String MIN = "MIN";
     public static final String LAST = "LAST";
     public static final String MEDIAN = "MEDIAN";
+    public static final String CV = "CV";
+    public static final String DEJUMP = "DEJUMP";
+    public static final String FOF = "FOF";
+    public static final String INTERP = "INTERP";
+    public static final String TREND = "TREND";
+    public static final String VAR = "VAR";
 
 
 
