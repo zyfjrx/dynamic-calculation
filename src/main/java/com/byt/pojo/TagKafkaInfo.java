@@ -34,8 +34,8 @@ public class TagKafkaInfo {
     private String winSlide;
     private Integer n;
     private Double a;// FOF
-    private Long lowerInt; // DEJUMP
-    private Long upperInt; // DEJUMP
+    private Double lowerInt; // DEJUMP
+    private Double upperInt; // DEJUMP
     private Double dt; // KF
     private Double R; // KF
     private Integer totalIndex; // 算子链总长度

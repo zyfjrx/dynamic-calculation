@@ -29,15 +29,12 @@ public class BatchOutAllWindowFunction extends ProcessAllWindowFunction<TagKafka
         ArrayList<TagKafkaInfo> tags = new ArrayList<>();
         Iterator<TagKafkaInfo> iterator = elements.iterator();
         while (iterator.hasNext()) {
-
             TagKafkaInfo tagKafkaInfo = iterator.next();
-            //System.out.println("window:"+tagKafkaInfo);
             tags.add(tagKafkaInfo);
         }
         if (tags.size() > 0) {
             out.collect(tags);
             tags.clear();
-            //System.out.println("tags"+tags);
         }
     }
 }

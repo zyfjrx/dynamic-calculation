@@ -1,6 +1,7 @@
 package com.byt.main;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.byt.cdc.FlinkCDC;
 import com.byt.constants.PropertiesConstants;
 import com.byt.func.BroadcastProcessFunc;
@@ -53,7 +54,7 @@ public class Ods2DwdJob {
                 .addSource(
                         MyKafkaUtilDev
                                 .getKafkaListConsumerWM(ConfigManager.getListProperty("kafka.ods.topic"),
-                                        ConfigManager.getProperty("kafka.group.id")
+                                        "test2"
                                 ));
         // 连接两个流 connect()
         SingleOutputStreamOperator<String> resultDS = kafkaDS
@@ -64,8 +65,8 @@ public class Ods2DwdJob {
                     public void flatMap(List<TagKafkaInfo> tagKafkaInfos, Collector<String> collector) throws Exception {
                         for (TagKafkaInfo tagKafkaInfo : tagKafkaInfos) {
                             if (tagKafkaInfo.getStatus() == 1) {
-                                String string = JSON.toJSONString(tagKafkaInfo);
-                                collector.collect(string);
+                                String jsonString = JSONObject.toJSONString(tagKafkaInfo);
+                                collector.collect(jsonString);
                             }
                         }
                     }

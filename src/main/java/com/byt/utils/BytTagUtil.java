@@ -21,6 +21,7 @@ public class BytTagUtil {
 
     private static List<String> twoParamTimeCal = Arrays.asList(new String[]{"AVG", "INTERP", "VARIANCE", "STD", "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ"});
     private static List<String> twoParamCal = Arrays.asList(new String[]{"KF"});
+    private static List<String> dejumpParamCal = Arrays.asList(new String[]{"DEJUMP"});
     private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "RAW"});
     private static List<String> oneParamCalFOF = Arrays.asList(new String[]{"FOF"});
 
@@ -58,7 +59,6 @@ public class BytTagUtil {
                                                 Map<String, TagProperties> bytInfoCache) throws Exception {
         // 获取到转换为Map结构的标签信息
         Map<String, TagKafkaInfo> tagInfoMap = tagInfoMap(value, hasTags);
-
         // 创建list 保存处理后的数据
         List<TagKafkaInfo> bytTagData = new ArrayList<>();
         if (tagInfoMap.isEmpty()) {
@@ -70,11 +70,11 @@ public class BytTagUtil {
             TagKafkaInfo bytTag = new TagKafkaInfo();
             String tagName = entry.getValue().tag_name;
             String bytName = entry.getValue().byt_name;
-            String taskName = entry.getValue().task_name;
+            String jobName = entry.getValue().task_name;
             String tagTopic = entry.getValue().tag_topic;
             Integer lineId = entry.getValue().line_id;
             String calculateType = entry.getValue().calculate_type;
-            Integer status = entry.getValue().status;
+            String param = entry.getValue().param;
 
             if (calculateType == null) {
                 continue;
@@ -88,6 +88,7 @@ public class BytTagUtil {
                 } catch (Exception e) {
                     bytTag.setValue(new BigDecimal(0));
                 }
+
                 TagKafkaInfo originTag = tagInfoMap.get(tagSet.toArray()[0]);
                 if (originTag != null && !originTag.getTopic().equals(tagTopic)) {
                     continue;
@@ -106,20 +107,22 @@ public class BytTagUtil {
                         continue;
                     }
                     bytTag.setTime(originTag.getTime());
-                    // todo dev
                     bytTag.setTopic(originTag.getTopic());
                     bytTag.setValue(originTag.getValue());
                     bytTag.setTimestamp(originTag.getTimestamp());
                 }
             }
+
             bytTag.setBytName(bytName);
             bytTag.setName(tagName);
             bytTag.setLineId(lineId);
             bytTag.setCalculateType(calculateType);
-            bytTag.setCalculateParam(entry.getValue().param);
-            bytTag.setTaskName(taskName);
-            bytTag.setStatus(status);
-            bytTagData.add(parseParams(bytTag, calculateType, entry.getValue().param));
+            bytTag.setCalculateParam(param);
+            bytTag.setTaskName(entry.getValue().task_name);
+            bytTag.setStatus(entry.getValue().status);
+            if (tagInfoMap.get(tagName) != null || tagName.contains(FormulaTag.START)) {
+                bytTagData.add(parseParams(bytTag,calculateType,param));
+            }
         }
         return bytTagData;
     }
@@ -136,7 +139,12 @@ public class BytTagUtil {
                 String[] split = params[i].split(",");
                 bytTag.setDt(Double.parseDouble(split[0]));
                 bytTag.setR(Double.parseDouble(split[1]));
-            } else if (oneParamCal.contains(types[i])) {
+            }else if (dejumpParamCal.contains(types[i])) {
+                String[] split = params[i].split(",");
+                bytTag.setLowerInt(Double.parseDouble(split[0]));
+                bytTag.setUpperInt(Double.parseDouble(split[1]));
+            }
+            else if (oneParamCal.contains(types[i])) {
                 String[] split = params[i].split(",");
                 bytTag.setN(Integer.parseInt(split[0]));
             } else {
@@ -151,7 +159,7 @@ public class BytTagUtil {
     }
 
 
-    public static void outputByWindow(TagKafkaInfo tagKafkaInfo , ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow>.Context context, Collector<TagKafkaInfo> out, OutputTag<TagKafkaInfo> dwdOutPutTag){
+    public static void outputByWindow(TagKafkaInfo tagKafkaInfo, ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow>.Context context, Collector<TagKafkaInfo> out, OutputTag<TagKafkaInfo> dwdOutPutTag) {
         tagKafkaInfo.setTimestamp(context.window().getEnd());
         tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
         if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()) {
@@ -164,7 +172,7 @@ public class BytTagUtil {
     }
 
 
-    public static void outputByKeyed(TagKafkaInfo tagKafkaInfo , KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context context, Collector<TagKafkaInfo> out, OutputTag<TagKafkaInfo> dwdOutPutTag){
+    public static void outputByKeyed(TagKafkaInfo tagKafkaInfo, KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context context, Collector<TagKafkaInfo> out, OutputTag<TagKafkaInfo> dwdOutPutTag) {
         tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
         if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()) {
             tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);

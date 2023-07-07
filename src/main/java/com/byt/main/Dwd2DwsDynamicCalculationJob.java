@@ -5,19 +5,24 @@ import com.byt.calculate.func.*;
 import com.byt.constants.PropertiesConstants;
 import com.byt.func.*;
 import com.byt.pojo.TagKafkaInfo;
+import com.byt.sink.DbResultBatchSink;
 import com.byt.utils.*;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,7 +30,7 @@ import java.util.Set;
  * @author: zhangyifan
  * @date: 2022/8/29 16:51
  */
-public class Dwd2DwsArithmeticJobTest {
+public class Dwd2DwsDynamicCalculationJob {
 
     public static void main(String[] args) throws Exception {
         // TODO 0.获取执行环境和相关参数
@@ -40,11 +45,13 @@ public class Dwd2DwsArithmeticJobTest {
 
         OutputTag<TagKafkaInfo> dwdOutPutTag = new OutputTag<TagKafkaInfo>("side-output-dwd") {
         };
+        OutputTag<TagKafkaInfo> secondOutPutTag = new OutputTag<TagKafkaInfo>("side-output-second") {
+        };
         SingleOutputStreamOperator<TagKafkaInfo> tagKafkaInfoDataStreamSource = env
                 // 2.1 添加数据源
                 .addSource(MyKafkaUtilDev.getKafkaPojoConsumerWM(
                         ConfigManager.getProperty("kafka.dwd.topic"),
-                        "dwddws_" + System.currentTimeMillis())
+                        "test_" + System.currentTimeMillis())
                 )
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
@@ -58,9 +65,12 @@ public class Dwd2DwsArithmeticJobTest {
                 .process(new ProcessFunction<TagKafkaInfo, TagKafkaInfo>() {
                     @Override
                     public void processElement(TagKafkaInfo value, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-                        if (sideOutPutTags.containsKey(value.getCurrCal())) {
-                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
+                        if (value.getTaskName().equals("kdj_macd_model")) {
+                            if (sideOutPutTags.containsKey(value.getCurrCal())) {
+                                ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
+                            }
                         }
+
                     }
                 })
                 .name("source2sides");
@@ -80,6 +90,7 @@ public class Dwd2DwsArithmeticJobTest {
         DataStream<TagKafkaInfo> pseqDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.PSEQ));
         DataStream<TagKafkaInfo> rangeDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.RANGE));
         DataStream<TagKafkaInfo> slopeDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.SLOPE));
+        DataStream<TagKafkaInfo> stdDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.STD));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultAVGDS = avgDs.keyBy(r -> r.getBytName())
                 .window(DynamicSlidingEventTimeWindows.of())
@@ -145,6 +156,11 @@ public class Dwd2DwsArithmeticJobTest {
                 .process(new SlopeProcessFunc(dwdOutPutTag))
                 .name("SLOPE");
 
+        SingleOutputStreamOperator<TagKafkaInfo> resultSTDDS = stdDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of())
+                .process(new StdProcessFunc(dwdOutPutTag))
+                .name("STD");
+
 
         // 获取还需进一步计算的数据
         DataStream<TagKafkaInfo> sideOutputAVG = resultAVGDS.getSideOutput(dwdOutPutTag);
@@ -154,42 +170,76 @@ public class Dwd2DwsArithmeticJobTest {
         DataStream<TagKafkaInfo> sideOutputLAST = resultLASTDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputCV = resultCVDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputDEJUMP = resultDEJUMPDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputINTERP = resultINTERPDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputFOF = resultFOFDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputTREND = resultTRENDDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputVAR = resultVARDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputPSEQ = resultPSEQDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputRANGE = resultRANGEDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputSLOPE = resultSLOPEDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputSTD = resultSTDDS.getSideOutput(dwdOutPutTag);
 
         // union后续计算数据
         SingleOutputStreamOperator<String> dwdResult = sideOutputAVG
                 .union(
                         sideOutputMAX, sideOutputMIN, sideOutputLAST,
                         sideOutputMEDIAN, sideOutputCV, sideOutputDEJUMP,
-                        sideOutputFOF, sideOutputTREND, sideOutputVAR,
-                        sideOutputPSEQ, sideOutputRANGE, sideOutputSLOPE
+                        sideOutputFOF, sideOutputINTERP, sideOutputTREND,
+                        sideOutputVAR, sideOutputPSEQ, sideOutputRANGE,
+                        sideOutputSLOPE, sideOutputSTD
                 )
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
         dwdResult.print("dwd>>>");
-        dwdResult.addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC_PREFIX)))
+        dwdResult.addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC)))
                 .name("dwd-sink");
 
         // union计算完成数据
-        SingleOutputStreamOperator<String> dwsResult = resultAVGDS
+        DataStream<TagKafkaInfo> dwsResult = resultAVGDS
                 .union(
                         resultMAXDS, resultMINDS, resultLASTDS,
                         resultMEDIANDS, resultCVDS, sideOutputDEJUMP,
-                        resultFOFDS, resultTRENDDS, resultVARDS,
-                        resultPSEQDS, resultRANGEDS, resultSLOPEDS
-                )
+                        resultFOFDS, resultINTERPDS, resultTRENDDS,
+                        resultVARDS, resultPSEQDS, resultRANGEDS,
+                        resultSLOPEDS, resultSTDDS
+                );
+        // send to kafka
+        dwsResult
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
-                .name("dws-union");
-        dwsResult.print("dws:>");
-        dwsResult.addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC)))
+                .addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC)))
                 .name("dws-sink");
+
+        // 划分分钟级别数据和秒级别数据
+        SingleOutputStreamOperator<TagKafkaInfo> minuteResult = dwsResult
+                .process(new ProcessFunction<TagKafkaInfo, TagKafkaInfo>() {
+                    @Override
+                    public void processElement(TagKafkaInfo value, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
+                        if (value.getWinSlide() != null && value.getWinSlide().contains("s")) {
+                            ctx.output(secondOutPutTag, value);
+                        } else {
+                            out.collect(value);
+                        }
+                    }
+                });
+        DataStream<TagKafkaInfo> secondResult = minuteResult.getSideOutput(secondOutPutTag);
+
+        // send to mysql 分钟级别数据
+//        minuteResult
+//                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
+//                .process(new BatchOutAllWindowFunction())
+//                .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_TODAY_TABLE)))
+//                .name("dws_tag_minute");
+
+
+        // send to mysql 秒级别级别数据
+        secondResult
+                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
+                .process(new BatchOutAllWindowFunction())
+                .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_SECOND_TABLE)))
+                .name("dws_tag_second");
+
         // TODO 8.启动任务
-        env.execute("dwd_arithmetic_job");
+        env.execute("dws_arithmetic_job");
     }
 
 }

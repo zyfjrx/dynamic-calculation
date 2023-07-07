@@ -28,7 +28,6 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
     private Map<String, TagProperties> bytInfoCache;
     private Set<String> hasTags;
     private Set<String> keys;
-    private String jobName;
 
 
     public BroadcastProcessFunc(MapStateDescriptor<String, TagProperties> mapStateDescriptor) {
@@ -49,7 +48,6 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         // 获取广播配置信息 封装为map
         for (String key : keys) {
             TagProperties tagProperties = broadcastState.get(key);
-            //System.out.println(key +"---->"+ tagProperties);
             bytInfoCache.put(key, tagProperties);
         }
 

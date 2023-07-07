@@ -12,6 +12,7 @@ public class PropertiesConstants {
     public static final String KAFKA_ODS_TOPIC = "kafka.ods.topic";
     public static final String KAFKA_DWD_TOPIC_PREFIX = "kafka.dwd.topic.prefix";
     public static final String KAFKA_DWS_TOPIC = "kafka.dws.topic";
+    public static final String KAFKA_DWD_TOPIC = "kafka.dwd.topic";
     public static final String KAFKA_GROUP_ID = "kafka.group.id";
     public static final String DEFAULT_KAFKA_GROUP_ID = "randhn";
 
@@ -69,6 +70,7 @@ public class PropertiesConstants {
     public static final String PSEQ = "PSEQ";
     public static final String RANGE = "RANGE";
     public static final String SLOPE = "SLOPE";
+    public static final String STD = "STD";
 
 
 
