@@ -91,6 +91,10 @@ public class Dwd2DwsDynamicCalculationJob {
         DataStream<TagKafkaInfo> rangeDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.RANGE));
         DataStream<TagKafkaInfo> slopeDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.SLOPE));
         DataStream<TagKafkaInfo> stdDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.STD));
+        DataStream<TagKafkaInfo> varianceDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.VARIANCE));
+        DataStream<TagKafkaInfo> sumDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.SUM));
+        DataStream<TagKafkaInfo> rawDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.RAW));
+        DataStream<TagKafkaInfo> kfDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.KF));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultAVGDS = avgDs.keyBy(r -> r.getBytName())
                 .window(DynamicSlidingEventTimeWindows.of())
@@ -161,6 +165,20 @@ public class Dwd2DwsDynamicCalculationJob {
                 .process(new StdProcessFunc(dwdOutPutTag))
                 .name("STD");
 
+        SingleOutputStreamOperator<TagKafkaInfo> resultVARIANCEDS = varianceDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of())
+                .process(new VarianceProcessFunc(dwdOutPutTag))
+                .name("VARIANCE");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultSUMDS = sumDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of())
+                .sum("value")
+                .name("SUM");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultKFDS = kfDs.keyBy(r -> r.getBytName())
+                .process(new KfProcessFunc(dwdOutPutTag))
+                .name("KF");
+
 
         // 获取还需进一步计算的数据
         DataStream<TagKafkaInfo> sideOutputAVG = resultAVGDS.getSideOutput(dwdOutPutTag);
@@ -178,6 +196,9 @@ public class Dwd2DwsDynamicCalculationJob {
         DataStream<TagKafkaInfo> sideOutputRANGE = resultRANGEDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputSLOPE = resultSLOPEDS.getSideOutput(dwdOutPutTag);
         DataStream<TagKafkaInfo> sideOutputSTD = resultSTDDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputVARIANCE = resultVARIANCEDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputSUM = resultSUMDS.getSideOutput(dwdOutPutTag);
+        DataStream<TagKafkaInfo> sideOutputKF = resultKFDS.getSideOutput(dwdOutPutTag);
 
         // union后续计算数据
         SingleOutputStreamOperator<String> dwdResult = sideOutputAVG
@@ -186,7 +207,8 @@ public class Dwd2DwsDynamicCalculationJob {
                         sideOutputMEDIAN, sideOutputCV, sideOutputDEJUMP,
                         sideOutputFOF, sideOutputINTERP, sideOutputTREND,
                         sideOutputVAR, sideOutputPSEQ, sideOutputRANGE,
-                        sideOutputSLOPE, sideOutputSTD
+                        sideOutputSLOPE, sideOutputSTD, sideOutputVARIANCE,
+                        sideOutputSUM, sideOutputKF
                 )
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
@@ -201,7 +223,8 @@ public class Dwd2DwsDynamicCalculationJob {
                         resultMEDIANDS, resultCVDS, sideOutputDEJUMP,
                         resultFOFDS, resultINTERPDS, resultTRENDDS,
                         resultVARDS, resultPSEQDS, resultRANGEDS,
-                        resultSLOPEDS, resultSTDDS
+                        resultSLOPEDS, resultSTDDS, resultVARIANCEDS,
+                        resultSUMDS, rawDs, sideOutputKF
                 );
         // send to kafka
         dwsResult

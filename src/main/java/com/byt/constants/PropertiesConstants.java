@@ -71,6 +71,10 @@ public class PropertiesConstants {
     public static final String RANGE = "RANGE";
     public static final String SLOPE = "SLOPE";
     public static final String STD = "STD";
+    public static final String VARIANCE = "VARIANCE";
+    public static final String SUM = "SUM";
+    public static final String RAW = "RAW";
+    public static final String KF = "KF";
 
 
 
