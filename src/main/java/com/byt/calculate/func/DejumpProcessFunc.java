@@ -1,6 +1,7 @@
 package com.byt.calculate.func;
 
 import com.byt.pojo.TagKafkaInfo;
+import com.byt.utils.BytTagUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -51,14 +52,6 @@ public class DejumpProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo
         } else {
             lastValue.update(tagKafkaInfo.getValue());
         }
-        tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
-        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()){
-            tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
-            ctx.output(dwdOutPutTag,tagKafkaInfo);
-        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()){
-            tagKafkaInfo.setCurrCal("over");
-            out.collect(tagKafkaInfo);
-        }
-
+        BytTagUtil.outputByKeyed(tagKafkaInfo,ctx,out,dwdOutPutTag);
     }
 }

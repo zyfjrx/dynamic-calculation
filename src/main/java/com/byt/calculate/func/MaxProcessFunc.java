@@ -2,6 +2,7 @@ package com.byt.calculate.func;
 
 
 import com.byt.pojo.TagKafkaInfo;
+import com.byt.utils.BytTagUtil;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
@@ -48,14 +49,7 @@ public class MaxProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafka
         });
         TagKafkaInfo tagKafkaInfo = arrayList.get(arrayList.size() - 1);
         tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
-        tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
-        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()){
-            tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
-            context.output(dwdOutPutTag,tagKafkaInfo);
-        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()){
-            tagKafkaInfo.setCurrCal("over");
-            out.collect(tagKafkaInfo);
-        }
+        BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         arrayList.clear();
     }
 }

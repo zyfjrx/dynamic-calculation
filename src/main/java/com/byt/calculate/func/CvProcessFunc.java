@@ -2,6 +2,7 @@ package com.byt.calculate.func;
 
 
 import com.byt.pojo.TagKafkaInfo;
+import com.byt.utils.BytTagUtil;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -49,28 +50,18 @@ public class CvProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafkaI
         for (TagKafkaInfo tagKafkaInfo : list) {
             variance = variance.add(tagKafkaInfo.getValue().subtract(avg).pow(2));
         }
-        TagKafkaInfo tagKafkaInfo = null;
+        TagKafkaInfo tagKafkaInfo = elements.iterator().next();;
         try {
             variance = variance.divide(num, 4, BigDecimal.ROUND_HALF_UP);
             Double std = Math.sqrt(variance.doubleValue());
             Double cv = std / avg.doubleValue();
-            tagKafkaInfo = elements.iterator().next();
             tagKafkaInfo.setValue(new BigDecimal(cv).setScale(4, BigDecimal.ROUND_HALF_UP));
-            tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
-            tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
-            tagKafkaInfo.setTimestamp(null);
-            if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()) {
-                tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
-                context.output(dwdOutPutTag, tagKafkaInfo);
-            } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()) {
-                tagKafkaInfo.setCurrCal("over");
-                out.collect(tagKafkaInfo);
-            }
         } catch (Exception e) {
             System.out.println("CV 计算异常～～～～");
             tagKafkaInfo.setValue(null);
-            tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
         }
+        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         list.clear();
     }
 }

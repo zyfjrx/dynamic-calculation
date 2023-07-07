@@ -15,7 +15,7 @@ import java.util.*;
 public class SideOutPutTagUtil {
 
     private static List<String> twoParamTimeCal = Arrays.asList(new String[]{"AVG", "INTERP", "VARIANCE", "STD", "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ"});
-    private static List<String> twoParamCal = Arrays.asList(new String[]{"KF"});
+    private static List<String> twoParamCal = Arrays.asList(new String[]{"KF","DEJUMP"});
     private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "FOF", "RAW"});
 
 

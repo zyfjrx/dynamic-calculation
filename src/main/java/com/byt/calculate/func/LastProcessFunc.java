@@ -1,6 +1,7 @@
 package com.byt.calculate.func;
 
 import com.byt.pojo.TagKafkaInfo;
+import com.byt.utils.BytTagUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -41,17 +42,7 @@ public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, 
             TagKafkaInfo newTag = new TagKafkaInfo();
             BeanUtils.copyProperties(newTag, value);
             newTag.setValue(tagKafkaInfoValue);
-            newTag.setCurrIndex(value.getCurrIndex() + 1);
-            if (newTag.getCurrIndex() < newTag.getTotalIndex()) {
-                // 还需要进行后续计算
-                String[] split = value.getCalculateType().split("_");
-                newTag.setCurrCal(split[newTag.getCurrIndex()]);
-                ctx.output(dwdOutPutTag, newTag);
-            } else {
-                // 计算完成输出
-                newTag.setCurrCal("over");
-                out.collect(newTag);
-            }
+            BytTagUtil.outputByKeyed(newTag,ctx,out,dwdOutPutTag);
         }
     }
 }

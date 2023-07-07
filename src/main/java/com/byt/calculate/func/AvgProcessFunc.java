@@ -1,11 +1,10 @@
 package com.byt.calculate.func;
 
-import com.byt.calculate.IfCalculate;
 import com.byt.pojo.TagKafkaInfo;
+import com.byt.utils.BytTagUtil;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -66,21 +65,10 @@ public class AvgProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafka
         }
         //System.out.println(sumState.value() + "--------------" + numState.value());
         BigDecimal avg = sumState.value().divide(numState.value(), 4, BigDecimal.ROUND_HALF_UP);
-        TagKafkaInfo result = elements.iterator().next();
-        result.setValue(avg);
-        result.setTime(sdf.format(context.window().getEnd()));
-        result.setTimestamp(null);
-        result.setCurrIndex(result.getCurrIndex() + 1);
-        if (result.getCurrIndex() < result.getTotalIndex()) {
-            // 还需要进行后续运算
-            String[] split = result.getCalculateType().split("_");
-            result.setCurrCal(split[result.getCurrIndex()]);
-            context.output(dwdOutPutTag, result);
-        } else if (result.getCurrIndex() == result.getTotalIndex()) {
-            // 计算完成直接输出
-            result.setCurrCal("over");
-            out.collect(result);
-        }
+        TagKafkaInfo tagKafkaInfo = elements.iterator().next();
+        tagKafkaInfo.setValue(avg);
+        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         sumState.clear();
         numState.clear();
     }

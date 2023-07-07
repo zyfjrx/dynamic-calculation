@@ -66,6 +66,9 @@ public class PropertiesConstants {
     public static final String INTERP = "INTERP";
     public static final String TREND = "TREND";
     public static final String VAR = "VAR";
+    public static final String PSEQ = "PSEQ";
+    public static final String RANGE = "RANGE";
+    public static final String SLOPE = "SLOPE";
 
 
 

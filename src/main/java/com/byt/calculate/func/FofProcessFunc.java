@@ -2,6 +2,7 @@ package com.byt.calculate.func;
 
 import com.byt.calculate.TStream;
 import com.byt.pojo.TagKafkaInfo;
+import com.byt.utils.BytTagUtil;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -52,16 +53,6 @@ public class FofProcessFunc extends KeyedProcessFunction<String,TagKafkaInfo, Ta
                         )
         );
         tagKafkaInfo.setValue(lastFirstOrder.value().setScale(4, BigDecimal.ROUND_HALF_UP));
-        tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
-        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()){
-            tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
-            ctx.output(dwdOutPutTag,tagKafkaInfo);
-        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()){
-            tagKafkaInfo.setCurrCal("over");
-            out.collect(tagKafkaInfo);
-        }
-        // TODO dev
-        //tagKafkaInfo.setTime(sdf.format(new Timestamp(System.currentTimeMillis())));
-        out.collect(tagKafkaInfo);
+        BytTagUtil.outputByKeyed(tagKafkaInfo,ctx,out,dwdOutPutTag);
     }
 }

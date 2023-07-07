@@ -71,7 +71,6 @@ public class SLOPE implements Transform {
         public void process(Tuple3<String, String, Integer> key, Context context, Iterable<TagKafkaInfo> iterable, Collector<TagKafkaInfo> collector) throws Exception {
             Iterator<TagKafkaInfo> tagIterator = iterable.iterator();
             ArrayList<TagKafkaInfo> list = new ArrayList<>();
-
             BigDecimal sum_y = BigDecimal.ZERO;
             while (tagIterator.hasNext()) {
                 TagKafkaInfo tagKafkaInfo = tagIterator.next();

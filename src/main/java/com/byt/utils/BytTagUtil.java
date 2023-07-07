@@ -2,6 +2,11 @@ package com.byt.utils;
 
 import com.byt.pojo.TagKafkaInfo;
 import com.byt.pojo.TagProperties;
+import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
+import org.apache.flink.util.OutputTag;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -143,5 +148,30 @@ public class BytTagUtil {
         bytTag.setCurrIndex(0);
         bytTag.setCurrCal(types[0]);
         return bytTag;
+    }
+
+
+    public static void outputByWindow(TagKafkaInfo tagKafkaInfo , ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow>.Context context, Collector<TagKafkaInfo> out, OutputTag<TagKafkaInfo> dwdOutPutTag){
+        tagKafkaInfo.setTimestamp(context.window().getEnd());
+        tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
+        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()) {
+            tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
+            context.output(dwdOutPutTag, tagKafkaInfo);
+        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()) {
+            tagKafkaInfo.setCurrCal("over");
+            out.collect(tagKafkaInfo);
+        }
+    }
+
+
+    public static void outputByKeyed(TagKafkaInfo tagKafkaInfo , KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context context, Collector<TagKafkaInfo> out, OutputTag<TagKafkaInfo> dwdOutPutTag){
+        tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
+        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()) {
+            tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
+            context.output(dwdOutPutTag, tagKafkaInfo);
+        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()) {
+            tagKafkaInfo.setCurrCal("over");
+            out.collect(tagKafkaInfo);
+        }
     }
 }
