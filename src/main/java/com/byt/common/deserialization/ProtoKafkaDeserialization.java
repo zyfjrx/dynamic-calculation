@@ -1,7 +1,8 @@
 package com.byt.common.deserialization;
 
-import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.common.protos.TagKafkaInfoProto;
+import com.byt.common.utils.BytTagUtil;
+import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -42,23 +43,18 @@ public class ProtoKafkaDeserialization implements KafkaDeserializationSchema<Lis
             String pName = kafkaInfoProtos.getName();
             String pValue = kafkaInfoProtos.getValue();
             String pTime = kafkaInfoProtos.getTime();
+            String strValue = kafkaInfoProtos.getValue();
             if (pName.equals("") || pValue.equals("") || pTime.equals("")) {
                 continue;
             }
 
             try {
-//                TagKafkaProtos.TagKafkaInfo kafkaInfoProtos = TagKafkaProtos.TagKafkaInfo.parseFrom(value.toByteArray());
                 TagKafkaInfo tagKafkaInfo = new TagKafkaInfo();
-                String strValue = kafkaInfoProtos.getValue();
                 tagKafkaInfo.setName(kafkaInfoProtos.getName());
-                //tagKafkaInfo.setTime(kafkaInfoProtos.getTime());
                 tagKafkaInfo.setTopic(record.topic());
-                //System.out.println(record.topic()+"-----------------------");
-                // TODO dev
-                tagKafkaInfo.setTime(kafkaInfoProtos.getTime());
-                tagKafkaInfo.setTimestamp(sdf.parse(tagKafkaInfo.getTime()).getTime());
-                //tagKafkaInfo.setTimestamp(System.currentTimeMillis());
-                //tagKafkaInfo.setTime(sdf2.format(new Timestamp(System.currentTimeMillis())));
+                // 统一时间格式
+                tagKafkaInfo.setTime(BytTagUtil.formatTime(pTime));
+                tagKafkaInfo.setTimestamp(sdf.parse(pTime).getTime());
                 if (strValue.equalsIgnoreCase("true") || strValue.equalsIgnoreCase("false")) {
                     tagKafkaInfo.setStrValue(strValue);
                     if (strValue.equalsIgnoreCase("true")) {
