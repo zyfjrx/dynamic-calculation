@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.byt.common.utils.BytTagUtil;
 import com.byt.common.utils.FormulaTag;
 import com.byt.common.utils.QlexpressUtil;
+import com.byt.tagcalculate.connection.SinkConnection;
+import com.byt.tagcalculate.connection.impl.DbConnection;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
 import org.apache.flink.api.common.state.BroadcastState;
@@ -14,6 +16,9 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -26,6 +31,8 @@ public class BroadcastProcessBynamicTableFunc extends BroadcastProcessFunction<L
     private Map<String, TagProperties> bytInfoCache;
     private Set<String> hasTags;
     private Set<String> keys;
+    private SinkConnection sinkConnection;
+    private Connection connection;
 
 
     public BroadcastProcessBynamicTableFunc(MapStateDescriptor<String, TagProperties> mapStateDescriptor) {
@@ -38,6 +45,8 @@ public class BroadcastProcessBynamicTableFunc extends BroadcastProcessFunction<L
         bytInfoCache = new HashMap<>(1024);
         hasTags = new HashSet<>();
         keys = new HashSet<>();
+        sinkConnection =  new DbConnection();
+        connection = sinkConnection.getConnection();
     }
 
     @Override
@@ -64,7 +73,14 @@ public class BroadcastProcessBynamicTableFunc extends BroadcastProcessFunction<L
         BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
         String op = jsonObject.getString("op");
         String key = after.byt_name + after.task_name;
+        String sinkTable = after.sink_table;
+        if (sinkTable != null){
+            // 创建数据表
+            createTable(sinkTable);
+
+        }
         //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
+
         if (!op.equals("d") && after.status == 1) {
             keys.add(key);
             if (after.tag_name.contains(FormulaTag.START)) {
@@ -81,10 +97,39 @@ public class BroadcastProcessBynamicTableFunc extends BroadcastProcessFunction<L
         System.out.println("keys---->" + keys);
     }
 
-
-    public static void main(String[] args) {
-        // {"id":19,"line_id":1,"username":"zhang","tag_name":"aj-aa","byt_name":"byt-a2","tag_topic":"opc-data","tag_type":"1","tag_desc":"测试","value_min":"0","value_max":"0","calculate_type":"DEJUMP_LAST","param":"-12,1000|2","post_send":0,"virtual_tag":0,"task_name":"tags_offline","create_time":1678957646000,"status":1}
-        TagProperties after = JSON.parseObject("{\"id\":19,\"line_id\":1,\"username\":\"zhang\",\"tag_name\":\"aj-aa\",\"byt_name\":\"byt-a2\",\"tag_topic\":\"opc-data\",\"tag_type\":\"1\",\"tag_desc\":\"测试\",\"value_min\":\"0\",\"value_max\":\"0\",\"calculate_type\":\"DEJUMP_LAST\",\"param\":\"-12,1000|2\",\"post_send\":0,\"virtual_tag\":0,\"task_name\":\"tags_offline\",\"create_time\":1678957646000,\"status\":1}\n", TagProperties.class);
-        System.out.println(after);
+    @Override
+    public void close() throws Exception {
+        connection.close();
     }
+
+    private void createTable(String sinkTable) {
+        PreparedStatement statement = null;
+        try {
+
+
+            String sql = "create table if not exists " + sinkTable + "(" +
+                    "byt_name varchar(255) null, " +
+                    "tag_topic varchar(255) null, " +
+                    "`value` double null , " +
+                    "calculate_time varchar(255) null, " +
+                    "calculate_type varchar(255) null," +
+                    "calculate_params varchar(255) null, " +
+                    "job_name varchar(50) null, " +
+                    "line_id int null);";
+            statement = connection.prepareStatement(sql);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("mysql建表失败！");
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 }
