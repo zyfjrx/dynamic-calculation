@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.calculate;
+package com.byt.tagcalculate.calculate.dynamicwindow;
 
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import org.apache.flink.api.common.ExecutionConfig;
@@ -6,7 +6,6 @@ import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.triggers.EventTimeTrigger;
 import org.apache.flink.streaming.api.windowing.triggers.Trigger;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 
@@ -19,7 +18,7 @@ import java.util.List;
  * @author: zhangyf
  * @date: 2023/7/4 14:19
  **/
-public class DynamicSlidingEventTimeWindows extends WindowAssigner<Object, TimeWindow> {
+public class DynamicSlidingEventTimeWindows extends WindowAssigner<TagKafkaInfo, TimeWindow> {
     private static final long serialVersionUID = 1L;
     private final long size;
     private final long offset;
@@ -36,13 +35,13 @@ public class DynamicSlidingEventTimeWindows extends WindowAssigner<Object, TimeW
     }
 
     @Override
-    public Collection<TimeWindow> assignWindows(Object element, long timestamp, WindowAssignerContext context) {
-        TagKafkaInfo tagKafkaInfo = null;
-        try {
-            tagKafkaInfo = (TagKafkaInfo) element;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public Collection<TimeWindow> assignWindows(TagKafkaInfo tagKafkaInfo, long timestamp, WindowAssignerContext context) {
+//        TagKafkaInfo tagKafkaInfo = null;
+//        try {
+//            tagKafkaInfo = (TagKafkaInfo) element;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         long realSize = timeParams(tagKafkaInfo.getWinSize());
         long realSlide = timeParams(tagKafkaInfo.getWinSlide());
         if (timestamp > Long.MIN_VALUE) {
@@ -90,8 +89,8 @@ public class DynamicSlidingEventTimeWindows extends WindowAssigner<Object, TimeW
 
 
     @Override
-    public Trigger<Object, TimeWindow> getDefaultTrigger(StreamExecutionEnvironment env) {
-        return EventTimeTrigger.create();
+    public Trigger<TagKafkaInfo, TimeWindow> getDefaultTrigger(StreamExecutionEnvironment env) {
+        return TagKafkaInfoEventTimeTrigger.create();
     }
 
     @Override

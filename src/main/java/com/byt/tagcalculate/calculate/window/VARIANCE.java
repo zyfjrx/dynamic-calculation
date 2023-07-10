@@ -1,9 +1,9 @@
 package com.byt.tagcalculate.calculate.window;
 
+import com.byt.tagcalculate.calculate.calculatechain.*;
 import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.common.utils.ConfigManager;
-import com.byt.tagcalculate.calculate.*;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;

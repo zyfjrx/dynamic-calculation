@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.calculate;
+package com.byt.tagcalculate.calculate.calculatechain;
 
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import org.apache.flink.streaming.api.datastream.DataStream;

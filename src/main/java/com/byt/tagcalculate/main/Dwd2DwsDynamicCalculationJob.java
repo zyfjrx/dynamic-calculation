@@ -1,6 +1,6 @@
 package com.byt.tagcalculate.main;
 
-import com.byt.tagcalculate.calculate.DynamicSlidingEventTimeWindows;
+import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindows;
 import com.byt.tagcalculate.calculate.func.*;
 import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.func.BatchOutAllWindowFunction;
@@ -10,7 +10,6 @@ import com.byt.tagcalculate.sink.DbResultBatchSink;
 import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.MyKafkaUtilDev;
 import com.byt.common.utils.SideOutPutTagUtil;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -141,7 +140,8 @@ public class Dwd2DwsDynamicCalculationJob {
                 .name("INTERP");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultTRENDDS = trendDs.keyBy(r -> r.getBytName())
-                .process(new TrendProcessFunc(dwdOutPutTag));
+                .process(new TrendProcessFunc(dwdOutPutTag))
+                .name("TREND");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultVARDS = trendDs.keyBy(r -> r.getBytName())
                 .process(new VarProcessFunc(dwdOutPutTag))
