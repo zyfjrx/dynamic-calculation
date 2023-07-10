@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.main;
+package com.byt.tagcalculate;
 
 import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindows;
 import com.byt.tagcalculate.calculate.func.*;
@@ -268,7 +268,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 .name("dws_tag_second");
 
         // TODO 8.启动任务
-        env.execute("dws_arithmetic_job");
+        env.execute("dws_dynamicCalculation_job");
     }
 
 }

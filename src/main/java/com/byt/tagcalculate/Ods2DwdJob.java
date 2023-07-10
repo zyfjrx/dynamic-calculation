@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.main;
+package com.byt.tagcalculate;
 
 import com.alibaba.fastjson.JSONObject;
 import com.byt.common.cdc.FlinkCDC;
