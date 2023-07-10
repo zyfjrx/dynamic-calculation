@@ -32,7 +32,7 @@ public class TrendProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo,
 
     @Override
     public void processElement(TagKafkaInfo value, KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-        Integer nBefore = value.getN();
+        Integer nBefore = value.getnBefore();
         lastQueue.offer(value);
         int size = lastQueue.size();
         if (size > nBefore) {

@@ -22,6 +22,7 @@ import java.util.Set;
  * @author: zhangyifan
  * @date: 2022/8/29 16:51
  */
+@Deprecated
 public class Dwd2DwsArithmeticJob {
 
     public static void main(String[] args) throws Exception {

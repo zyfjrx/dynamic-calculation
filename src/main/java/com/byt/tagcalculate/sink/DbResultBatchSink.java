@@ -8,11 +8,13 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
+    private transient SimpleDateFormat sdf;
     PreparedStatement ps;
     private String tableName;
     private SinkConnection sinkConnection;
@@ -27,6 +29,8 @@ public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
             sinkConnection = new DbConnection();
             log.info("DB Connection is open");
         }
+
+        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         super.open(parameters);
     }
 

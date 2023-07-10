@@ -2,13 +2,11 @@ package com.byt.tagcalculate.main;
 
 import com.alibaba.fastjson.JSONObject;
 import com.byt.common.cdc.FlinkCDC;
+import com.byt.common.utils.*;
 import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.func.BroadcastProcessFunc;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
-import com.byt.common.utils.ConfigManager;
-import com.byt.common.utils.MyKafkaUtilDev;
-import com.byt.common.utils.StreamEnvUtil;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.state.MapStateDescriptor;
@@ -61,6 +59,7 @@ public class Ods2DwdJob {
                     public void flatMap(List<TagKafkaInfo> tagKafkaInfos, Collector<String> collector) throws Exception {
                         for (TagKafkaInfo tagKafkaInfo : tagKafkaInfos) {
                             if (tagKafkaInfo.getStatus() == 1) {
+                                //tagKafkaInfo.setTime(BytTagUtil.reformat(tagKafkaInfo.getTimestamp()));
                                 String jsonString = JSONObject.toJSONString(tagKafkaInfo);
                                 collector.collect(jsonString);
                             }

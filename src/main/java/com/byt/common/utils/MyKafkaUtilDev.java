@@ -33,21 +33,7 @@ public class MyKafkaUtilDev {
 
     }
 
-    /**
-     * kafka-消费者 处理时间
-     *
-     * @param topic
-     * @param groupId
-     * @return
-     */
-    public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumer(String topic, String groupId) {
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        return new FlinkKafkaConsumer<List<TagKafkaInfo>>(
-                topic,
-                new ProtoKafkaDeserialization(),
-                properties
-        );
-    }
+
 
 
     /**

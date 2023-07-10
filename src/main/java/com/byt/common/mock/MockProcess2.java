@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.mock;
+package com.byt.common.mock;
 
 import com.byt.tagcalculate.pojo.TopicData;
 import com.byt.common.protos.TagKafkaProtos;

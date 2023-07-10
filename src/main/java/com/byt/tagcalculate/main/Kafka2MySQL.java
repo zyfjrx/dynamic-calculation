@@ -22,12 +22,12 @@ public class Kafka2MySQL {
         env
                 // 2.1 添加数据源
                 .addSource(MyKafkaUtilDev.getKafkaPojoConsumerWM(
-                        ConfigManager.getProperty("kafka.dwd.topic"),
+                        ConfigManager.getProperty("kafka.dws.topic"),
                         "Kafka2MySQL")
                 )
-                .windowAll(TumblingProcessingTimeWindows.of(Time.minutes(3)))
+                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(10)))
                 .process(new BatchOutAllWindowFunction())
-                .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_TODAY_TABLE)))
+                .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_RESULT_TABLE)))
                 .name("Kafka2MySQL");
 
 

@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
  * @author: zhang
  * @date: 2022/8/15 10:25
  */
+@Deprecated
 public class Ods2DwdAddInfoJob {
     public static void main(String[] args) throws Exception {
         // TODO 0.获取执行环境信息

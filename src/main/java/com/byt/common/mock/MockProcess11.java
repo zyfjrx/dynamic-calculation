@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.mock;
+package com.byt.common.mock;
 
 import com.byt.tagcalculate.pojo.TopicData;
 import com.byt.common.protos.TagKafkaProtos;
@@ -28,7 +28,7 @@ import java.util.Random;
  * @author: zhangyifan
  * @date: 2022/10/14 08:59
  */
-public class MockProcess1 {
+public class MockProcess11 {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
@@ -39,7 +39,9 @@ public class MockProcess1 {
                     Integer times = 5000000;
                     private Random random = new Random();
                     // 待发送标签
-                    private String[] tagNames = {"aj-aa"};
+                    //private String[] tagNames = {"aj-aa","aj-aa","aj-aa","aj-dd","aj-ee","aj-ff","aj-gg","aj-hh","aj-1","aj-2","aj-3","aj-4","aj-5","aj-6","aj-7","aj-8"};
+                    private String[] tagNames = {"aj-aa","aj-cc","aj-8","aj-ee","aj-6"};
+                    //private String[] tagNames = {"aj-aa"};
                     private Integer[] values = {1, 2, 5, 8, 10, 11, 13, 14, 17, 18, 20, 21, 24, 25, 26, 27, 28, 31, 32, 33, 34, 35, 38, 39, 41, 42, 43, 45, 46, 48,
                             49, 50, 51, 53, 56, 57, 58, 59, 60, 61, 62, 63, 65, 69, 72, 78, 79, 81, 82, 83, 87, 88, 89, 90, 91, 93, 94, 95, 96,
                             97, 99, 101, 102, 103, 105, 106, 108, 111, 112, 113, 115, 116, 117, 121, 122, 123, 124, 125, 126, 127, 129, 130,
@@ -66,15 +68,17 @@ public class MockProcess1 {
                     @Override
                     public void run(SourceContext<MockBean> ctx) throws Exception {
                         while (times > 0) {
-                            MockBean mockBean = new MockBean(
-                                    tagNames[random.nextInt(tagNames.length)],
-                                    values[random.nextInt(values.length)],
-                                    //random.nextInt(1000),
-                                    //999,
-                                    Calendar.getInstance().getTimeInMillis()
-                            );
-                            ctx.collect(mockBean);
-                            System.out.println("发送数据：" + mockBean + ",发送时间：" + new Timestamp(mockBean.getTs()));
+                            for (String tagName : tagNames) {
+                                MockBean mockBean = new MockBean(
+                                        tagName,
+                                        values[random.nextInt(values.length)],
+                                        //random.nextInt(1000),
+                                        //999,
+                                        Calendar.getInstance().getTimeInMillis()
+                                );
+                                ctx.collect(mockBean);
+                                System.out.println("发送数据：" + mockBean + ",发送时间：" + new Timestamp(mockBean.getTs()));
+                            }
                             times--;
                             Thread.sleep(1000L);
                         }

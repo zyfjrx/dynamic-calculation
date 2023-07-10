@@ -10,6 +10,7 @@ import com.byt.tagcalculate.sink.DbResultBatchSink;
 import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.MyKafkaUtilDev;
 import com.byt.common.utils.SideOutPutTagUtil;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -65,15 +66,16 @@ public class Dwd2DwsDynamicCalculationJob {
                 .process(new ProcessFunction<TagKafkaInfo, TagKafkaInfo>() {
                     @Override
                     public void processElement(TagKafkaInfo value, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-                        if (value.getTaskName().equals("kdj_macd_model")) {
-                            if (sideOutPutTags.containsKey(value.getCurrCal())) {
-                                ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
-                            }
+
+                        if (sideOutPutTags.containsKey(value.getCurrCal())) {
+                            ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
                         }
+
 
                     }
                 })
                 .name("source2sides");
+
 
         // 获取到对应计算的数据
         DataStream<TagKafkaInfo> avgDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.AVG));
@@ -172,7 +174,7 @@ public class Dwd2DwsDynamicCalculationJob {
 
         SingleOutputStreamOperator<TagKafkaInfo> resultSUMDS = sumDs.keyBy(r -> r.getBytName())
                 .window(DynamicSlidingEventTimeWindows.of())
-                .sum("value")
+                .process(new SumProcessFunc(dwdOutPutTag))
                 .name("SUM");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultKFDS = kfDs.keyBy(r -> r.getBytName())
@@ -232,12 +234,14 @@ public class Dwd2DwsDynamicCalculationJob {
                 .addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC)))
                 .name("dws-sink");
 
+        dwsResult.print("dws<<<");
+
         // 划分分钟级别数据和秒级别数据
         SingleOutputStreamOperator<TagKafkaInfo> minuteResult = dwsResult
                 .process(new ProcessFunction<TagKafkaInfo, TagKafkaInfo>() {
                     @Override
                     public void processElement(TagKafkaInfo value, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-                        if (value.getWinSlide() != null && value.getWinSlide().contains("s")) {
+                        if (value.getCalculateParam() != null && value.getCalculateParam().contains("s")) {
                             ctx.output(secondOutPutTag, value);
                         } else {
                             out.collect(value);
@@ -246,12 +250,14 @@ public class Dwd2DwsDynamicCalculationJob {
                 });
         DataStream<TagKafkaInfo> secondResult = minuteResult.getSideOutput(secondOutPutTag);
 
+        secondResult.print("second<><><>");
+        minuteResult.print("minute++++++");
         // send to mysql 分钟级别数据
-//        minuteResult
-//                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
-//                .process(new BatchOutAllWindowFunction())
-//                .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_TODAY_TABLE)))
-//                .name("dws_tag_minute");
+        minuteResult
+                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
+                .process(new BatchOutAllWindowFunction())
+                .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_TODAY_TABLE)))
+                .name("dws_tag_minute");
 
 
         // send to mysql 秒级别级别数据

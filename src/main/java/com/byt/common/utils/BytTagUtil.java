@@ -9,6 +9,7 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -19,7 +20,7 @@ import java.util.*;
 public class BytTagUtil {
 
 
-    private static List<String> twoParamTimeCal = Arrays.asList(new String[]{"AVG", "INTERP", "VARIANCE", "STD", "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ"});
+    private static List<String> twoParamTimeCal = Arrays.asList(new String[]{"AVG", "INTERP", "VARIANCE", "STD", "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ", "SUM"});
     private static List<String> twoParamCal = Arrays.asList(new String[]{"KF"});
     private static List<String> dejumpParamCal = Arrays.asList(new String[]{"DEJUMP"});
     private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "RAW"});
@@ -121,7 +122,7 @@ public class BytTagUtil {
             bytTag.setTaskName(entry.getValue().task_name);
             bytTag.setStatus(entry.getValue().status);
             if (tagInfoMap.get(tagName) != null || tagName.contains(FormulaTag.START)) {
-                bytTagData.add(parseParams(bytTag,calculateType,param));
+                bytTagData.add(parseParams(bytTag, calculateType, param));
             }
         }
         return bytTagData;
@@ -139,14 +140,13 @@ public class BytTagUtil {
                 String[] split = params[i].split(",");
                 bytTag.setDt(Double.parseDouble(split[0]));
                 bytTag.setR(Double.parseDouble(split[1]));
-            }else if (dejumpParamCal.contains(types[i])) {
+            } else if (dejumpParamCal.contains(types[i])) {
                 String[] split = params[i].split(",");
                 bytTag.setLowerInt(Double.parseDouble(split[0]));
                 bytTag.setUpperInt(Double.parseDouble(split[1]));
-            }
-            else if (oneParamCal.contains(types[i])) {
+            } else if (oneParamCal.contains(types[i])) {
                 String[] split = params[i].split(",");
-                bytTag.setN(Integer.parseInt(split[0]));
+                bytTag.setnBefore(Integer.parseInt(split[0]));
             } else {
                 String[] split = params[i].split(",");
                 bytTag.setA(Double.parseDouble(split[0]));
@@ -182,4 +182,34 @@ public class BytTagUtil {
             out.collect(tagKafkaInfo);
         }
     }
+
+
+    public static String reformat(long l) {
+        //yyyyMMddHHmmss
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//可以方便地修改日期格式
+        String s1 = "";
+        try {
+            s1 = sdf.format(new Date(l));
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return s1;
+    }
+
+
+    public static String formatTime(String srcTime) {
+        SimpleDateFormat srcSdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat tarSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String targetTime = "";
+        try {
+            long time = srcSdf.parse(srcTime).getTime();
+            targetTime = tarSdf.format(time);
+        } catch (Exception e) {
+            System.out.println(e+"时间格式转换异常");
+        }
+        return targetTime;
+    }
+
+
 }

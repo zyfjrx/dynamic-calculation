@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.mock;
+package com.byt.common.mock;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

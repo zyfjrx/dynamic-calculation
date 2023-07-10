@@ -1,7 +1,6 @@
 package com.byt.common.deserialization;
 
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -21,7 +20,6 @@ public class TagInfoDeserializationSchema implements DeserializationSchema<TagKa
     public TagKafkaInfo deserialize(byte[] bytes) throws IOException {
         TagKafkaInfo tagKafkaInfo = null;
         try {
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             tagKafkaInfo = objectMapper.readValue(bytes, TagKafkaInfo.class);
         } catch (IOException e) {
             e.printStackTrace();

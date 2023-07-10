@@ -32,7 +32,7 @@ public class TagKafkaInfo {
     private Integer lineId;
     private String winSize;
     private String winSlide;
-    private Integer n;
+    private Integer nBefore;
     private Double a;// FOF
     private Double lowerInt; // DEJUMP
     private Double upperInt; // DEJUMP
@@ -66,4 +66,230 @@ public class TagKafkaInfo {
         return Objects.hash(name, time, value, topic, bytName);
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public BigDecimal getValue() {
+        return value;
+    }
+
+    public void setValue(BigDecimal value) {
+        this.value = value;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public Integer getTagType() {
+        return tagType;
+    }
+
+    public void setTagType(Integer tagType) {
+        this.tagType = tagType;
+    }
+
+    public String getBytName() {
+        return bytName;
+    }
+
+    public void setBytName(String bytName) {
+        this.bytName = bytName;
+    }
+
+    public String getStrValue() {
+        return strValue;
+    }
+
+    public void setStrValue(String strValue) {
+        this.strValue = strValue;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public Integer getIsNormal() {
+        return isNormal;
+    }
+
+    public void setIsNormal(Integer isNormal) {
+        this.isNormal = isNormal;
+    }
+
+    public String getCalculateType() {
+        return calculateType;
+    }
+
+    public void setCalculateType(String calculateType) {
+        this.calculateType = calculateType;
+    }
+
+    public String getCalculateParam() {
+        return calculateParam;
+    }
+
+    public void setCalculateParam(String calculateParam) {
+        this.calculateParam = calculateParam;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public Integer getLineId() {
+        return lineId;
+    }
+
+    public void setLineId(Integer lineId) {
+        this.lineId = lineId;
+    }
+
+    public String getWinSize() {
+        return winSize;
+    }
+
+    public void setWinSize(String winSize) {
+        this.winSize = winSize;
+    }
+
+    public String getWinSlide() {
+        return winSlide;
+    }
+
+    public void setWinSlide(String winSlide) {
+        this.winSlide = winSlide;
+    }
+
+    public Integer getnBefore() {
+        return nBefore;
+    }
+
+    public void setnBefore(Integer nBefore) {
+        this.nBefore = nBefore;
+    }
+
+    public Double getA() {
+        return a;
+    }
+
+    public void setA(Double a) {
+        this.a = a;
+    }
+
+    public Double getLowerInt() {
+        return lowerInt;
+    }
+
+    public void setLowerInt(Double lowerInt) {
+        this.lowerInt = lowerInt;
+    }
+
+    public Double getUpperInt() {
+        return upperInt;
+    }
+
+    public void setUpperInt(Double upperInt) {
+        this.upperInt = upperInt;
+    }
+
+    public Double getDt() {
+        return dt;
+    }
+
+    public void setDt(Double dt) {
+        this.dt = dt;
+    }
+
+    public Double getR() {
+        return R;
+    }
+
+    public void setR(Double r) {
+        R = r;
+    }
+
+    public Integer getTotalIndex() {
+        return totalIndex;
+    }
+
+    public void setTotalIndex(Integer totalIndex) {
+        this.totalIndex = totalIndex;
+    }
+
+    public Integer getCurrIndex() {
+        return currIndex;
+    }
+
+    public void setCurrIndex(Integer currIndex) {
+        this.currIndex = currIndex;
+    }
+
+    public String getCurrCal() {
+        return currCal;
+    }
+
+    public void setCurrCal(String currCal) {
+        this.currCal = currCal;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "TagKafkaInfo{" +
+                "name='" + name + '\'' +
+                ", time='" + time + '\'' +
+                ", value=" + value +
+                ", topic='" + topic + '\'' +
+                ", tagType=" + tagType +
+                ", bytName='" + bytName + '\'' +
+                ", strValue='" + strValue + '\'' +
+                ", timestamp=" + timestamp +
+                ", isNormal=" + isNormal +
+                ", calculateType='" + calculateType + '\'' +
+                ", calculateParam='" + calculateParam + '\'' +
+                ", taskName='" + taskName + '\'' +
+                ", lineId=" + lineId +
+                ", winSize='" + winSize + '\'' +
+                ", winSlide='" + winSlide + '\'' +
+                ", nBefore=" + nBefore +
+                ", a=" + a +
+                ", lowerInt=" + lowerInt +
+                ", upperInt=" + upperInt +
+                ", dt=" + dt +
+                ", R=" + R +
+                ", totalIndex=" + totalIndex +
+                ", currIndex=" + currIndex +
+                ", currCal='" + currCal + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }

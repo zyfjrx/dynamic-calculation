@@ -26,6 +26,7 @@ public class TagProperties {
     public String value_min;
     public String value_max;
     public String task_name;
+    public String sink_table;
     public String param;
     public Integer status;
 
