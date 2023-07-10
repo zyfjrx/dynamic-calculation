@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.main;
+package com.byt.tagcalculate;
 
 import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.func.BatchOutAllWindowFunction;

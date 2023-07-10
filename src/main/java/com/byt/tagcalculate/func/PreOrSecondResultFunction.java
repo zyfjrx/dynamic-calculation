@@ -1,12 +1,9 @@
 package com.byt.tagcalculate.func;
 
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
-
-import java.text.SimpleDateFormat;
 
 /**
  * @title: 分流预处理和最终结果
@@ -16,7 +13,6 @@ import java.text.SimpleDateFormat;
 public class PreOrSecondResultFunction extends ProcessFunction<TagKafkaInfo,TagKafkaInfo> {
     private OutputTag<TagKafkaInfo> preOutPutTag;
     private OutputTag<TagKafkaInfo> secondOutPutTag;
-    private SimpleDateFormat sdf;
 
     public PreOrSecondResultFunction(OutputTag<TagKafkaInfo> preOutPutTag, OutputTag<TagKafkaInfo> secondOutPutTag) {
         this.preOutPutTag = preOutPutTag;
@@ -24,20 +20,12 @@ public class PreOrSecondResultFunction extends ProcessFunction<TagKafkaInfo,TagK
     }
 
     @Override
-    public void open(Configuration parameters) throws Exception {
-        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    }
-
-    @Override
     public void processElement(TagKafkaInfo tagKafkaInfo, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context context, Collector<TagKafkaInfo> collector) throws Exception {
-        //System.out.println("time:"+tagKafkaInfo.getTimeGap()+tagKafkaInfo);
         if (tagKafkaInfo.getBytName().endsWith("_$")) {
             context.output(preOutPutTag, tagKafkaInfo);
         } else if (tagKafkaInfo.getCalculateParam().contains("s")){
-            //System.out.println("s----"+tagKafkaInfo);
             context.output(secondOutPutTag,tagKafkaInfo);
         }else {
-            //System.out.println("aaa:"+tagKafkaInfo);
             collector.collect(tagKafkaInfo);
         }
     }

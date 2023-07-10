@@ -75,6 +75,7 @@ public class PropertiesConstants {
     public static final String SUM = "SUM";
     public static final String RAW = "RAW";
     public static final String KF = "KF";
+    public static final String DWD = "DWD";
 
 
 

@@ -39,7 +39,7 @@ public class PreProcessFunction extends ProcessWindowFunction<TagKafkaInfo, Topi
 
         TopicData topicData = new TopicData();
         // TODO middle tag topic
-        topicData.setTopic("tags_pre_test");
+        topicData.setTopic("tags_pre");
         topicData.setData(lvOut.toByteArray());
         out.collect(topicData);
     }

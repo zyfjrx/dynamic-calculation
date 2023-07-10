@@ -1,15 +1,17 @@
 package com.byt.tagcalculate;
 
+import com.byt.common.utils.ConfigManager;
+import com.byt.common.utils.MyKafkaUtilDev;
+import com.byt.common.utils.SideOutPutTagUtil;
 import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindows;
 import com.byt.tagcalculate.calculate.func.*;
 import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.func.BatchOutAllWindowFunction;
 import com.byt.tagcalculate.func.MapPojo2JsonStr;
+import com.byt.tagcalculate.func.PreOrSecondResultFunction;
+import com.byt.tagcalculate.func.PreProcessFunction;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.sink.DbResultBatchSink;
-import com.byt.common.utils.ConfigManager;
-import com.byt.common.utils.MyKafkaUtilDev;
-import com.byt.common.utils.SideOutPutTagUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -28,7 +30,7 @@ import java.util.Set;
 /**
  * @title: DWS动态计算
  * @author: zhangyifan
- * @date: 2022/8/29 16:51
+ * @date: 2023/7/10 16:51
  */
 public class Dwd2DwsDynamicCalculationJob {
 
@@ -37,6 +39,7 @@ public class Dwd2DwsDynamicCalculationJob {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
+        // 定义测输出流标签
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = SideOutPutTagUtil.getSideOutPutTags();
         Set<String> strings = sideOutPutTags.keySet();
         for (String string : strings) {
@@ -47,6 +50,9 @@ public class Dwd2DwsDynamicCalculationJob {
         };
         OutputTag<TagKafkaInfo> secondOutPutTag = new OutputTag<TagKafkaInfo>("side-output-second") {
         };
+        OutputTag<TagKafkaInfo> preOutPutTag = new OutputTag<TagKafkaInfo>("side-output-pre") {
+        }; // 中间算子回流通道
+
         SingleOutputStreamOperator<TagKafkaInfo> tagKafkaInfoDataStreamSource = env
                 // 2.1 添加数据源
                 .addSource(MyKafkaUtilDev.getKafkaPojoConsumerWM(
@@ -65,12 +71,9 @@ public class Dwd2DwsDynamicCalculationJob {
                 .process(new ProcessFunction<TagKafkaInfo, TagKafkaInfo>() {
                     @Override
                     public void processElement(TagKafkaInfo value, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-
                         if (sideOutPutTags.containsKey(value.getCurrCal())) {
                             ctx.output(sideOutPutTags.get(value.getCurrCal()), value);
                         }
-
-
                     }
                 })
                 .name("source2sides");
@@ -236,22 +239,25 @@ public class Dwd2DwsDynamicCalculationJob {
 
         dwsResult.print("dws<<<");
 
-        // 划分分钟级别数据和秒级别数据
+        // 划分分钟级别数据、秒级别数据和中间算子数据
         SingleOutputStreamOperator<TagKafkaInfo> minuteResult = dwsResult
-                .process(new ProcessFunction<TagKafkaInfo, TagKafkaInfo>() {
-                    @Override
-                    public void processElement(TagKafkaInfo value, ProcessFunction<TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-                        if (value.getCalculateParam() != null && value.getCalculateParam().contains("s")) {
-                            ctx.output(secondOutPutTag, value);
-                        } else {
-                            out.collect(value);
-                        }
-                    }
-                });
-        DataStream<TagKafkaInfo> secondResult = minuteResult.getSideOutput(secondOutPutTag);
+                .process(new PreOrSecondResultFunction(preOutPutTag,secondOutPutTag));
+        
+        DataStream<TagKafkaInfo> secondResult = minuteResult.getSideOutput(secondOutPutTag); // 秒级别数据
+        DataStream<TagKafkaInfo> preResult = minuteResult.getSideOutput(preOutPutTag); // 中间算子回流数据
 
         secondResult.print("second<><><>");
         minuteResult.print("minute++++++");
+        preResult.print("pre------");
+
+        // send to kafka(tag_pre)
+        preResult
+                .keyBy(r -> r.getTime())
+                .window(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
+                .process(new PreProcessFunction())
+                .addSink(MyKafkaUtilDev.getProducerWithTopicData())
+                .name("中间算子回流");
+
         // send to mysql 分钟级别数据
         minuteResult
                 .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
