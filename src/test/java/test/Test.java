@@ -1,8 +1,6 @@
 package test;
 
-import com.byt.common.utils.MyKafkaUtilDev;
 import lombok.EqualsAndHashCode;
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 /**
  * @title:
@@ -12,13 +10,10 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 @EqualsAndHashCode
 public class Test {
     public static void main(String[] args) throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(1);
-
-        env
-                .addSource(MyKafkaUtilDev.getKafkaPojoConsumerWM("dwd_data","sssaaaa"))
-                        .print();
-
-env.execute();
+        long lastStart = 5;
+        for (long start = lastStart; start > 13 - 10; start -= 5) {
+            System.out.println(start);
+            System.out.println(start+5);
+        }
     }
 }

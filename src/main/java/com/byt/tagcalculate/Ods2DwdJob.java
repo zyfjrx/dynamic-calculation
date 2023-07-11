@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.byt.common.cdc.FlinkCDC;
 import com.byt.common.utils.*;
 import com.byt.tagcalculate.constants.PropertiesConstants;
+import com.byt.tagcalculate.func.BroadcastProcessBynamicTableFunc;
 import com.byt.tagcalculate.func.BroadcastProcessFunc;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
@@ -48,7 +49,7 @@ public class Ods2DwdJob {
                 .addSource(
                         MyKafkaUtilDev
                                 .getKafkaListConsumerWM(ConfigManager.getListProperty("kafka.ods.topic"),
-                                        "test2"
+                                        "test21111qqq"
                                 ));
         // 连接两个流 connect()
         SingleOutputStreamOperator<String> resultDS = kafkaDS

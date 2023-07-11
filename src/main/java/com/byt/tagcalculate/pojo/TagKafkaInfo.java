@@ -30,8 +30,8 @@ public class TagKafkaInfo {
     private String calculateParam;
     private String taskName;
     private Integer lineId;
-    private String winSize;
-    private String winSlide;
+    private Long winSize;
+    private Long winSlide;
     private Integer nBefore;
     private Double a;// FOF
     private Double lowerInt; // DEJUMP
@@ -166,19 +166,19 @@ public class TagKafkaInfo {
         this.lineId = lineId;
     }
 
-    public String getWinSize() {
+    public Long getWinSize() {
         return winSize;
     }
 
-    public void setWinSize(String winSize) {
+    public void setWinSize(Long winSize) {
         this.winSize = winSize;
     }
 
-    public String getWinSlide() {
+    public Long getWinSlide() {
         return winSlide;
     }
 
-    public void setWinSlide(String winSlide) {
+    public void setWinSlide(Long winSlide) {
         this.winSlide = winSlide;
     }
 

@@ -1,6 +1,6 @@
 package com.byt.tagcalculate.calculate.window;
 
-import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindows;
+import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindowsOld;
 import com.byt.tagcalculate.calculate.calculatechain.TStream;
 import com.byt.tagcalculate.calculate.calculatechain.Transform;
 import com.byt.tagcalculate.calculate.calculatechain.TransformChain;
@@ -48,7 +48,7 @@ public class AVG implements Transform {
                         return Tuple7.of(r.getName(), r.getTopic(), r.getBytName(), r.getCalculateParam(), r.getCalculateType(), r.getLineId(), r.getTaskName());
                     }
                 })
-                .window(DynamicSlidingEventTimeWindows.of(Time.seconds(10L),Time.seconds(1L)))
+                .window(DynamicSlidingEventTimeWindowsOld.of(Time.seconds(10L),Time.seconds(1L)))
                 .aggregate(
                         new AvgAgg(),
                         new AvgResult()

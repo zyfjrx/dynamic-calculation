@@ -134,8 +134,8 @@ public class BytTagUtil {
         for (int i = 0; i < types.length; i++) {
             if (twoParamTimeCal.contains(types[i])) {
                 String[] split = params[i].split(",");
-                bytTag.setWinSize(split[0]);
-                bytTag.setWinSlide(split[1]);
+                bytTag.setWinSize(timeParams(split[0]));
+                bytTag.setWinSlide(timeParams(split[1]));
             } else if (twoParamCal.contains(types[i])) {
                 String[] split = params[i].split(",");
                 bytTag.setDt(Double.parseDouble(split[0]));
@@ -209,6 +209,18 @@ public class BytTagUtil {
             System.out.println(e+"时间格式转换异常");
         }
         return targetTime;
+    }
+
+
+
+    public static Long timeParams(String str) {
+        Long time = null;
+        if (str.contains("s")) {
+            time = Long.parseLong(str.replace("s", "")) * 1000L;
+        } else if (str.contains("m")) {
+            time = Long.parseLong(str.replace("m", "")) * 60L * 1000L;
+        }
+        return time;
     }
 
 
