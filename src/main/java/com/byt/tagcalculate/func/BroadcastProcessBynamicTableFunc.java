@@ -74,13 +74,11 @@ public class BroadcastProcessBynamicTableFunc extends BroadcastProcessFunction<L
         String op = jsonObject.getString("op");
         String key = after.byt_name + after.task_name;
         String sinkTable = after.sink_table;
+        // 根据配置创建相应的输出结果表
         if (sinkTable != null){
-            // 创建数据表
             createTable(sinkTable);
-
         }
-        //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
-
+        // 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
         if (!op.equals("d") && after.status == 1) {
             keys.add(key);
             if (after.tag_name.contains(FormulaTag.START)) {
@@ -105,13 +103,11 @@ public class BroadcastProcessBynamicTableFunc extends BroadcastProcessFunction<L
     private void createTable(String sinkTable) {
         PreparedStatement statement = null;
         try {
-
-
             String sql = "create table if not exists " + sinkTable + "(" +
                     "byt_name varchar(255) null, " +
                     "tag_topic varchar(255) null, " +
                     "`value` double null , " +
-                    "calculate_time varchar(255) null, " +
+                    "calculate_time timestamp null, " +
                     "calculate_type varchar(255) null," +
                     "calculate_params varchar(255) null, " +
                     "job_name varchar(50) null, " +
@@ -120,7 +116,7 @@ public class BroadcastProcessBynamicTableFunc extends BroadcastProcessFunction<L
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("mysql建表失败！");
+            throw new RuntimeException("mysql ("+sinkTable+") 建表失败！");
         } finally {
             if (statement != null) {
                 try {
