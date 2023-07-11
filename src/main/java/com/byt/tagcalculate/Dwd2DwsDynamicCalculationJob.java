@@ -3,7 +3,9 @@ package com.byt.tagcalculate;
 import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.MyKafkaUtilDev;
 import com.byt.common.utils.SideOutPutTagUtil;
+import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindowsOld;
 import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindows;
+import com.byt.tagcalculate.calculate.dynamicwindow.TimeAdjustExtractor;
 import com.byt.tagcalculate.calculate.func.*;
 import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.func.BatchOutAllWindowFunction;
@@ -101,33 +103,220 @@ public class Dwd2DwsDynamicCalculationJob {
         DataStream<TagKafkaInfo> kfDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.KF));
 
         SingleOutputStreamOperator<TagKafkaInfo> resultAVGDS = avgDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
+                .window(DynamicSlidingEventTimeWindows.<TagKafkaInfo>of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
                 .process(new AvgProcessFunc(dwdOutPutTag))
                 .name("AVG");
 
-        SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs.keyBy(r -> r.getBytName())
-                .process(new LastProcessFunc(dwdOutPutTag))
-                .name("LAST");
-
         SingleOutputStreamOperator<TagKafkaInfo> resultMAXDS = maxDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
                 .process(new MaxProcessFunc(dwdOutPutTag))
                 .name("MAX");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMINDS = minDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
                 .process(new MinProcessFunc(dwdOutPutTag))
                 .name("MIN");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMEDIANDS = medianDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
                 .process(new MedianProcessFunc(dwdOutPutTag))
                 .name("MEDIAN");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultCVDS = cvDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
                 .process(new CvProcessFunc(dwdOutPutTag))
                 .name("CV");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultINTERPDS = interpDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
+                .process(new InterpProcessFunc(dwdOutPutTag))
+                .name("INTERP");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultPSEQDS = pseqDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
+                .process(new PseqProcessFunc(dwdOutPutTag))
+                .name("PSEQ");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultRANGEDS = rangeDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
+                .process(new RangeProcessFunc(dwdOutPutTag))
+                .name("RANGE");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultSLOPEDS = slopeDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
+                .process(new SlopeProcessFunc(dwdOutPutTag))
+                .name("SLOPE");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultSTDDS = stdDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
+                .process(new StdProcessFunc(dwdOutPutTag))
+                .name("STD");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultVARIANCEDS = varianceDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
+                .process(new VarianceProcessFunc(dwdOutPutTag))
+                .name("VARIANCE");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultSUMDS = sumDs.keyBy(r -> r.getBytName())
+                .window(DynamicSlidingEventTimeWindows.of(
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSize();
+                            }
+                        },
+                        new TimeAdjustExtractor<TagKafkaInfo>() {
+                            @Override
+                            public long extract(TagKafkaInfo element) {
+                                return element.getWinSlide();
+                            }
+                        }
+                ))
+                .process(new SumProcessFunc(dwdOutPutTag))
+                .name("SUM");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultDEJUMPDS = dejumpDs.keyBy(r -> r.getBytName())
                 .process(new DejumpProcessFunc(dwdOutPutTag))
@@ -137,11 +326,6 @@ public class Dwd2DwsDynamicCalculationJob {
                 .process(new FofProcessFunc(dwdOutPutTag))
                 .name("FOF");
 
-        SingleOutputStreamOperator<TagKafkaInfo> resultINTERPDS = interpDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
-                .process(new InterpProcessFunc(dwdOutPutTag))
-                .name("INTERP");
-
         SingleOutputStreamOperator<TagKafkaInfo> resultTRENDDS = trendDs.keyBy(r -> r.getBytName())
                 .process(new TrendProcessFunc(dwdOutPutTag))
                 .name("TREND");
@@ -150,35 +334,9 @@ public class Dwd2DwsDynamicCalculationJob {
                 .process(new VarProcessFunc(dwdOutPutTag))
                 .name("VAR");
 
-        SingleOutputStreamOperator<TagKafkaInfo> resultPSEQDS = pseqDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
-                .process(new PseqProcessFunc(dwdOutPutTag))
-                .name("PSEQ");
-
-        SingleOutputStreamOperator<TagKafkaInfo> resultRANGEDS = rangeDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
-                .process(new RangeProcessFunc(dwdOutPutTag))
-                .name("RANGE");
-
-        SingleOutputStreamOperator<TagKafkaInfo> resultSLOPEDS = slopeDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
-                .process(new SlopeProcessFunc(dwdOutPutTag))
-                .name("SLOPE");
-
-        SingleOutputStreamOperator<TagKafkaInfo> resultSTDDS = stdDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
-                .process(new StdProcessFunc(dwdOutPutTag))
-                .name("STD");
-
-        SingleOutputStreamOperator<TagKafkaInfo> resultVARIANCEDS = varianceDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
-                .process(new VarianceProcessFunc(dwdOutPutTag))
-                .name("VARIANCE");
-
-        SingleOutputStreamOperator<TagKafkaInfo> resultSUMDS = sumDs.keyBy(r -> r.getBytName())
-                .window(DynamicSlidingEventTimeWindows.of())
-                .process(new SumProcessFunc(dwdOutPutTag))
-                .name("SUM");
+        SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs.keyBy(r -> r.getBytName())
+                .process(new LastProcessFunc(dwdOutPutTag))
+                .name("LAST");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultKFDS = kfDs.keyBy(r -> r.getBytName())
                 .process(new KfProcessFunc(dwdOutPutTag))
@@ -225,7 +383,7 @@ public class Dwd2DwsDynamicCalculationJob {
         DataStream<TagKafkaInfo> dwsResult = resultAVGDS
                 .union(
                         resultMAXDS, resultMINDS, resultLASTDS,
-                        resultMEDIANDS, resultCVDS, sideOutputDEJUMP,
+                        resultMEDIANDS, resultCVDS, resultDEJUMPDS,
                         resultFOFDS, resultINTERPDS, resultTRENDDS,
                         resultVARDS, resultPSEQDS, resultRANGEDS,
                         resultSLOPEDS, resultSTDDS, resultVARIANCEDS,
@@ -241,14 +399,14 @@ public class Dwd2DwsDynamicCalculationJob {
 
         // 划分分钟级别数据、秒级别数据和中间算子数据
         SingleOutputStreamOperator<TagKafkaInfo> minuteResult = dwsResult
-                .process(new PreOrSecondResultFunction(preOutPutTag,secondOutPutTag));
-        
+                .process(new PreOrSecondResultFunction(preOutPutTag, secondOutPutTag));
+
         DataStream<TagKafkaInfo> secondResult = minuteResult.getSideOutput(secondOutPutTag); // 秒级别数据
         DataStream<TagKafkaInfo> preResult = minuteResult.getSideOutput(preOutPutTag); // 中间算子回流数据
 
-        secondResult.print("second<><><>");
-        minuteResult.print("minute++++++");
-        preResult.print("pre------");
+        //secondResult.print("second<><><>");
+        //minuteResult.print("minute++++++");
+        //preResult.print("pre------");
 
         // send to kafka(tag_pre)
         preResult

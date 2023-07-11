@@ -1,5 +1,6 @@
 package com.byt.tagcalculate.calculate.dynamicwindow;
 
+import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -15,47 +16,33 @@ import java.util.List;
 /**
  * @title: Dynamic window
  * @author: zhangyf
- * @date: 2023/7/11 14:19
+ * @date: 2023/7/4 14:19
  **/
-public class DynamicSlidingEventTimeWindows<T> extends WindowAssigner<T, TimeWindow> {
+@Deprecated
+public class DynamicSlidingEventTimeWindowsOld extends WindowAssigner<TagKafkaInfo, TimeWindow> {
     private static final long serialVersionUID = 1L;
     private final long size;
     private final long offset;
     private final long slide;
 
-    //从原始数据中获取窗口长度
-    private final TimeAdjustExtractor<T> sizeTimeAdjustExtractor;
-    //从原始数据中获取窗口步长
-    private final TimeAdjustExtractor<T> slideTimeAdjustExtractor;
-
-    private DynamicSlidingEventTimeWindows(long size, long slide, long offset) {
+    private DynamicSlidingEventTimeWindowsOld(long size, long slide, long offset) {
         if (Math.abs(offset) < slide && size > 0L) {
             this.size = size;
             this.slide = slide;
             this.offset = offset;
-            this.sizeTimeAdjustExtractor = (ele) -> 0;
-            this.slideTimeAdjustExtractor = (ele) -> 0;
         } else {
             throw new IllegalArgumentException("DynamicProcessingTimeWindows parameters must satisfy abs(offset) < slide and size > 0");
         }
     }
 
-
-    public DynamicSlidingEventTimeWindows(long size, long offset, long slide, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
-        this.size = size;
-        this.offset = offset;
-        this.slide = slide;
-        this.sizeTimeAdjustExtractor = sizeTimeAdjustExtractor;
-        this.slideTimeAdjustExtractor = slideTimeAdjustExtractor;
-    }
-
     @Override
-    public Collection<TimeWindow> assignWindows(T element, long timestamp, WindowAssignerContext context) {
-        long realSize = this.sizeTimeAdjustExtractor.extract(element);
-        long realSlide = this.slideTimeAdjustExtractor.extract(element);
+    public Collection<TimeWindow> assignWindows(TagKafkaInfo tagKafkaInfo, long timestamp, WindowAssignerContext context) {
+        long realSize = tagKafkaInfo.getWinSize();
+        long realSlide = tagKafkaInfo.getWinSlide();
         if (timestamp > Long.MIN_VALUE) {
             List<TimeWindow> windows = new ArrayList((int) ((realSize == 0 ? size : realSize) / (realSlide == 0 ? slide : realSlide)));
             long lastStart = TimeWindow.getWindowStartWithOffset(timestamp, this.offset, (realSlide == 0 ? slide : realSlide));
+
             for (long start = lastStart; start > timestamp - (realSize == 0 ? size : realSize); start -= (realSlide == 0 ? slide : realSlide)) {
                 windows.add(new TimeWindow(start, start + (realSize == 0 ? size : realSize)));
             }
@@ -82,28 +69,23 @@ public class DynamicSlidingEventTimeWindows<T> extends WindowAssigner<T, TimeWin
         return "DynamicSlidingEventTimeWindows(" + this.size + ", " + this.slide + ")";
     }
 
-    public static DynamicSlidingEventTimeWindows of(Time size, Time slide) {
-        return new DynamicSlidingEventTimeWindows(size.toMilliseconds(), slide.toMilliseconds(), 0L);
+    public static DynamicSlidingEventTimeWindowsOld of(Time size, Time slide) {
+        return new DynamicSlidingEventTimeWindowsOld(size.toMilliseconds(), slide.toMilliseconds(), 0L);
     }
 
-    public static <T> DynamicSlidingEventTimeWindows<T> of(TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
-        return new DynamicSlidingEventTimeWindows(5 * 1000L, 5 * 1000L, 0L,sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
-    }
-
-    public static DynamicSlidingEventTimeWindows of() {
+    public static DynamicSlidingEventTimeWindowsOld of() {
         // 默认值 数据流中没有开窗参数时使用
-        return new DynamicSlidingEventTimeWindows(5 * 1000L, 5 * 1000L, 0L);
+        return new DynamicSlidingEventTimeWindowsOld(5 * 1000L, 5 * 1000L, 0L);
     }
 
-    public static DynamicSlidingEventTimeWindows of(Time size, Time slide, Time offset) {
-        return new DynamicSlidingEventTimeWindows(size.toMilliseconds(), slide.toMilliseconds(), offset.toMilliseconds());
+    public static DynamicSlidingEventTimeWindowsOld of(Time size, Time slide, Time offset) {
+        return new DynamicSlidingEventTimeWindowsOld(size.toMilliseconds(), slide.toMilliseconds(), offset.toMilliseconds());
     }
 
 
     @Override
-    public Trigger<T, TimeWindow> getDefaultTrigger(StreamExecutionEnvironment env) {
-        //return (Trigger<T, TimeWindow>) EventTimeTrigger.create();
-        return DynamicEventTimeTrigger.<T>create();
+    public Trigger<TagKafkaInfo, TimeWindow> getDefaultTrigger(StreamExecutionEnvironment env) {
+        return TagKafkaInfoEventTimeTrigger.create();
     }
 
     @Override
@@ -116,4 +98,13 @@ public class DynamicSlidingEventTimeWindows<T> extends WindowAssigner<T, TimeWin
         return true;
     }
 
+    public static Long timeParams(String str) {
+        Long time = null;
+        if (str.contains("s")) {
+            time = Long.parseLong(str.replace("s", "")) * 1000L;
+        } else if (str.contains("m")) {
+            time = Long.parseLong(str.replace("m", "")) * 60L * 1000L;
+        }
+        return time;
+    }
 }
