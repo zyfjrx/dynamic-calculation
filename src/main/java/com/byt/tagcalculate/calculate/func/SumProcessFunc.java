@@ -21,7 +21,7 @@ import java.util.Iterator;
  * @date: 2023/7/10 14:27
  **/
 public class SumProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow> {
-    private transient SimpleDateFormat sdf;
+    private  SimpleDateFormat sdf;
     private  OutputTag<TagKafkaInfo> dwdOutPutTag;
     private  ValueState<BigDecimal> sumState;
 

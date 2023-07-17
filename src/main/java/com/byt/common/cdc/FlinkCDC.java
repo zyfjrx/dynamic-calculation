@@ -3,8 +3,8 @@ package com.byt.common.cdc;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.common.utils.ConfigManager;
+import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.connectors.mysql.table.StartupOptions;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;

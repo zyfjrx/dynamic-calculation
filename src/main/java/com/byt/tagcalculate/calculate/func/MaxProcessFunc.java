@@ -20,7 +20,7 @@ import java.util.Iterator;
  * @date: 2023/7/5 14:38
  **/
 public class MaxProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow> {
-    private transient SimpleDateFormat sdf;
+    private  SimpleDateFormat sdf;
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
 
     public MaxProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {

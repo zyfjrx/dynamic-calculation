@@ -70,7 +70,7 @@ public class QlexpressUtil {
         }*/
 //([CXL2_HFD_A_yali_back] > [CXL2_HFD_A_yali_back])?1:0
 
-        String express = "([SERVER_OSC::C4T/C4AT03.MV] > [SERVER_OSC::C6T/C6T01.MV])?1:0";
+/*        String express = "([SERVER_OSC::C4T/C4AT03.MV] > [SERVER_OSC::C6T/C6T01.MV])?1:0";
         //String express = "[CXL2_ZLJLL_50] + [CXL2_XS_yewei]";
         HashMap<String, TagKafkaInfo> tagMap = new HashMap<>();
         TagKafkaInfo a = new TagKafkaInfo();
@@ -80,9 +80,9 @@ public class QlexpressUtil {
         tagMap.put("SERVER_OSC::C4T/C4AT03.MV", a);
         tagMap.put("SERVER_OSC::C6T/C6T01.MV", b);
         Object r = computeExpress(tagMap, express);
-        System.out.println(r);
+        System.out.println(regEx);*/
 
-/*        String express = "{SERVER_OSC::C4T/C4AT03.MV} - {SERVER_OSC::C6T/C6T01.MV}";
+        String express = "{SERVER_OSC::C4T/C4AT03.MV} - {SERVER_OSC::C6T/C6T01.MV}";
         System.out.println(regEx);
         System.out.println(getTagSet(express));
         HashMap<String, TagKafkaInfo> tagMap = new HashMap<>();
@@ -93,7 +93,7 @@ public class QlexpressUtil {
         tagMap.put("SERVER_OSC::C4T/C4AT03.MV", a);
         tagMap.put("SERVER_OSC::C6T/C6T01.MV", b);
         Object r = computeExpress(tagMap, express);
-        System.out.println(r);*/
+        System.out.println(r);
 /*        String tagName = "[SERVER_OSC::C4T/C4AT03.MV] - [SERVER_OSC::C6T/C6T01.MV]";
 
         Set<String> tagSet = QlexpressUtil.getTagSet(tagName);

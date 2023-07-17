@@ -20,7 +20,7 @@ import java.util.Iterator;
  * @date: 2023/7/6 14:38
  **/
 public class CvProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow> {
-    private transient SimpleDateFormat sdf;
+    private  SimpleDateFormat sdf;
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
 
     public CvProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {

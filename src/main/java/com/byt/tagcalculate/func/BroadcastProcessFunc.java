@@ -59,9 +59,11 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         System.out.println(value + "--------------------------");
         // 获取并解析数据，方便主流操作
         JSONObject jsonObject = JSON.parseObject(value);
+        System.out.println("json>>>>>:"+jsonObject);
         TagProperties after = JSON.parseObject(jsonObject.getString("after"), TagProperties.class);
         BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
         String op = jsonObject.getString("op");
+        after.setOp(op);
         String key = after.byt_name + after.task_name;
         //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
         if (!op.equals("d") && after.status == 1) {
@@ -73,9 +75,10 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
                 hasTags.add(after.tag_name.trim());
             }
             broadcastState.put(key, after);
-        } else if (op.equals("u")){
-            broadcastState.put(key,after);
+        } else if ("u".equals(op)){
+            broadcastState.put(key, after);
         }
+        System.out.println("after:"+after);
         System.out.println("hasTags---->" + hasTags);
         System.out.println("keys---->" + keys);
     }

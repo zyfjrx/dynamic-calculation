@@ -2,6 +2,7 @@ package com.byt.common.utils;
 
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
+import org.apache.flink.cep.functions.PatternProcessFunction;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -26,6 +27,7 @@ public class BytTagUtil {
     private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "RAW"});
     private static List<String> oneParamCalFOF = Arrays.asList(new String[]{"FOF"});
 
+    private static Integer N = 0;
 
     /**
      * 将标签转换为 map 方便后期处理
@@ -76,6 +78,7 @@ public class BytTagUtil {
             Integer lineId = entry.getValue().line_id;
             String calculateType = entry.getValue().calculate_type;
             String param = entry.getValue().param;
+            String op = entry.getValue().op;
 
             if (calculateType == null) {
                 continue;
@@ -114,6 +117,7 @@ public class BytTagUtil {
                 }
             }
 
+            bytTag.setOp(op);
             bytTag.setBytName(bytName);
             bytTag.setName(tagName);
             bytTag.setLineId(lineId);
@@ -146,7 +150,7 @@ public class BytTagUtil {
                 bytTag.setUpperInt(Double.parseDouble(split[1]));
             } else if (oneParamCal.contains(types[i])) {
                 String[] split = params[i].split(",");
-                bytTag.setnBefore(Integer.parseInt(split[0]));
+                bytTag.setCurrNBefore(Integer.parseInt(split[0]));
             } else {
                 String[] split = params[i].split(",");
                 bytTag.setA(Double.parseDouble(split[0]));
@@ -183,6 +187,17 @@ public class BytTagUtil {
         }
     }
 
+    public static void outputByKeyed(TagKafkaInfo tagKafkaInfo, PatternProcessFunction.Context context, Collector<TagKafkaInfo> out, OutputTag<TagKafkaInfo> dwdOutPutTag) {
+        tagKafkaInfo.setCurrIndex(tagKafkaInfo.getCurrIndex() + 1);
+        if (tagKafkaInfo.getCurrIndex() < tagKafkaInfo.getTotalIndex()) {
+            tagKafkaInfo.setCurrCal(tagKafkaInfo.getCalculateType().split("_")[tagKafkaInfo.getCurrIndex()]);
+            context.output(dwdOutPutTag, tagKafkaInfo);
+        } else if (tagKafkaInfo.getCurrIndex() == tagKafkaInfo.getTotalIndex()) {
+            tagKafkaInfo.setCurrCal("over");
+            out.collect(tagKafkaInfo);
+        }
+    }
+
 
     public static String reformat(long l) {
         //yyyyMMddHHmmss
@@ -206,11 +221,10 @@ public class BytTagUtil {
             long time = srcSdf.parse(srcTime).getTime();
             targetTime = tarSdf.format(time);
         } catch (Exception e) {
-            System.out.println(e+"时间格式转换异常");
+            System.out.println(e + "时间格式转换异常");
         }
         return targetTime;
     }
-
 
 
     public static Long timeParams(String str) {

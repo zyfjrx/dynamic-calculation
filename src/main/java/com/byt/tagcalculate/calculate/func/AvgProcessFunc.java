@@ -21,8 +21,8 @@ import java.util.Iterator;
  * @date: 2023/7/5 14:27
  **/
 public class AvgProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow> {
-    private transient SimpleDateFormat sdf;
-    private  OutputTag<TagKafkaInfo> dwdOutPutTag;
+    private  SimpleDateFormat sdf;
+    private OutputTag<TagKafkaInfo> dwdOutPutTag;
     private  ValueState<BigDecimal> sumState;
     private ValueState<BigDecimal> numState;
 

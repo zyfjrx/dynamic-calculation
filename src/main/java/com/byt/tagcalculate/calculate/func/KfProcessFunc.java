@@ -27,7 +27,7 @@ import static org.nd4j.linalg.api.buffer.DataType.DOUBLE;
  */
 public class KfProcessFunc extends KeyedProcessFunction<String,TagKafkaInfo,TagKafkaInfo> {
 
-    private transient ValueState<Tuple2<INDArray, INDArray>> KFState;
+    private  ValueState<Tuple2<INDArray, INDArray>> KFState;
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
     Double dt;
     Double r;
