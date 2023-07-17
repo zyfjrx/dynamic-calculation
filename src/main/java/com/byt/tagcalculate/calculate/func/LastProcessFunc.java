@@ -61,6 +61,7 @@ public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, 
             BigDecimal tagKafkaInfoValue = tagKafkaInfo.getValue();
             TagKafkaInfo newTag = new TagKafkaInfo();
             BeanUtils.copyProperties(newTag, value);
+            newTag.setValue(tagKafkaInfoValue);
             BytTagUtil.outputByKeyed(newTag,ctx,out,dwdOutPutTag);
         }
     }
