@@ -33,6 +33,18 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.flink</groupId>-->
+        <!--            <artifactId>flink-streaming-java-byt</artifactId>-->
+        <!--            <version>1.13.5</version>-->
+        <!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-cep-byt</artifactId>
+            <version>1.13.5</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
@@ -101,7 +113,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-common</artifactId>
@@ -120,11 +131,11 @@
             <version>${flink.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-cep_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.flink</groupId>-->
+<!--            <artifactId>flink-cep_${scala.binary.version}</artifactId>-->
+<!--            <version>${flink.version}</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>mysql</groupId>
@@ -290,7 +301,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                           <excludeScope>provided</excludeScope>
+                            <excludeScope>provided</excludeScope>
                             <outputDirectory>${project.build.directory}/libs</outputDirectory>
                         </configuration>
                     </execution>

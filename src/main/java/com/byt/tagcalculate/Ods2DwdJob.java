@@ -2,20 +2,25 @@ package com.byt.tagcalculate;
 
 import com.alibaba.fastjson.JSONObject;
 import com.byt.common.cdc.FlinkCDC;
-import com.byt.common.utils.*;
+import com.byt.common.utils.ConfigManager;
+import com.byt.common.utils.MyKafkaUtilDev;
 import com.byt.tagcalculate.constants.PropertiesConstants;
-import com.byt.tagcalculate.func.BroadcastProcessBynamicTableFunc;
 import com.byt.tagcalculate.func.BroadcastProcessFunc;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -33,7 +38,7 @@ import java.util.List;
 public class Ods2DwdJob {
     public static void main(String[] args) throws Exception {
         // TODO 0.获取执行环境信息
-        StreamExecutionEnvironment env = StreamEnvUtil.getEnv("ods2dwd");
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
         // TODO 1.定义广播状态描述器、读取配置流转换为广播流
         MapStateDescriptor<String, TagProperties> mapStateDescriptor = new MapStateDescriptor<>(

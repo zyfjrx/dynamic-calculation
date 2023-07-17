@@ -32,7 +32,9 @@ public class TagKafkaInfo {
     private Integer lineId;
     private Long winSize;
     private Long winSlide;
-    private Integer nBefore;
+    private Integer currNBefore; //1
+    private boolean changeNFA = false; // 0 初始化 oldNBefore=currNBefore
+    private String op; // 操作类型
     private Double a;// FOF
     private Double lowerInt; // DEJUMP
     private Double upperInt; // DEJUMP
@@ -182,13 +184,6 @@ public class TagKafkaInfo {
         this.winSlide = winSlide;
     }
 
-    public Integer getnBefore() {
-        return nBefore;
-    }
-
-    public void setnBefore(Integer nBefore) {
-        this.nBefore = nBefore;
-    }
 
     public Double getA() {
         return a;
@@ -262,6 +257,22 @@ public class TagKafkaInfo {
         this.status = status;
     }
 
+    public Integer getCurrNBefore() {
+        return currNBefore;
+    }
+
+    public void setCurrNBefore(Integer currNBefore) {
+        this.currNBefore = currNBefore;
+    }
+
+    public boolean getChangeNFA() {
+        return changeNFA;
+    }
+
+    public void setChangeNFA(boolean changeNFA) {
+        this.changeNFA = changeNFA;
+    }
+
     @Override
     public String toString() {
         return "TagKafkaInfo{" +
@@ -278,9 +289,10 @@ public class TagKafkaInfo {
                 ", calculateParam='" + calculateParam + '\'' +
                 ", taskName='" + taskName + '\'' +
                 ", lineId=" + lineId +
-                ", winSize='" + winSize + '\'' +
-                ", winSlide='" + winSlide + '\'' +
-                ", nBefore=" + nBefore +
+                ", winSize=" + winSize +
+                ", winSlide=" + winSlide +
+                ", currNBefore=" + currNBefore +
+                ", changeNFA=" + changeNFA +
                 ", a=" + a +
                 ", lowerInt=" + lowerInt +
                 ", upperInt=" + upperInt +

@@ -19,7 +19,7 @@ import java.util.Queue;
  **/
 public class TrendProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo> {
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
-    private transient Queue<TagKafkaInfo> lastQueue;
+    private  Queue<TagKafkaInfo> lastQueue;
 
     public TrendProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {
         this.dwdOutPutTag = dwdOutPutTag;
@@ -32,7 +32,7 @@ public class TrendProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo,
 
     @Override
     public void processElement(TagKafkaInfo value, KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
-        Integer nBefore = value.getnBefore();
+        Integer nBefore = value.getCurrNBefore();
         lastQueue.offer(value);
         int size = lastQueue.size();
         if (size > nBefore) {

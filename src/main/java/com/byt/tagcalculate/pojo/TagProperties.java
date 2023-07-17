@@ -28,6 +28,7 @@ public class TagProperties {
     public String task_name;
     public String sink_table;
     public String param;
+    public String op;
     public Integer status;
 
     @Override

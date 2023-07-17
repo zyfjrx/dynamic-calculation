@@ -1,9 +1,10 @@
 package com.byt.tagcalculate;
 
+import com.byt.common.cdc.FlinkCDC;
+import com.byt.common.utils.BytTagUtil;
 import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.MyKafkaUtilDev;
 import com.byt.common.utils.SideOutPutTagUtil;
-import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindowsOld;
 import com.byt.tagcalculate.calculate.dynamicwindow.DynamicSlidingEventTimeWindows;
 import com.byt.tagcalculate.calculate.dynamicwindow.TimeAdjustExtractor;
 import com.byt.tagcalculate.calculate.func.*;
@@ -13,12 +14,30 @@ import com.byt.tagcalculate.func.MapPojo2JsonStr;
 import com.byt.tagcalculate.func.PreOrSecondResultFunction;
 import com.byt.tagcalculate.func.PreProcessFunction;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
+import com.byt.tagcalculate.pojo.TagProperties;
 import com.byt.tagcalculate.sink.DbResultBatchSink;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.functions.KeySelector;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.cep.CEP;
+import org.apache.flink.cep.PatternStream;
+import org.apache.flink.cep.functions.PatternProcessFunction;
+import org.apache.flink.cep.listern.CepListener;
+import org.apache.flink.cep.pattern.Pattern;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -27,6 +46,8 @@ import org.apache.flink.util.OutputTag;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -101,6 +122,7 @@ public class Dwd2DwsDynamicCalculationJob {
         DataStream<TagKafkaInfo> sumDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.SUM));
         DataStream<TagKafkaInfo> rawDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.RAW));
         DataStream<TagKafkaInfo> kfDs = tagKafkaInfoDataStreamSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.KF));
+
 
         SingleOutputStreamOperator<TagKafkaInfo> resultAVGDS = avgDs.keyBy(r -> r.getBytName())
                 .window(DynamicSlidingEventTimeWindows.<TagKafkaInfo>of(
@@ -326,17 +348,106 @@ public class Dwd2DwsDynamicCalculationJob {
                 .process(new FofProcessFunc(dwdOutPutTag))
                 .name("FOF");
 
-        SingleOutputStreamOperator<TagKafkaInfo> resultTRENDDS = trendDs.keyBy(r -> r.getBytName())
-                .process(new TrendProcessFunc(dwdOutPutTag))
-                .name("TREND");
-
-        SingleOutputStreamOperator<TagKafkaInfo> resultVARDS = trendDs.keyBy(r -> r.getBytName())
-                .process(new VarProcessFunc(dwdOutPutTag))
-                .name("VAR");
-
         SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs.keyBy(r -> r.getBytName())
                 .process(new LastProcessFunc(dwdOutPutTag))
-                .name("LAST");
+                .name("last");
+
+        Pattern<TagKafkaInfo, TagKafkaInfo> pattern = Pattern.<TagKafkaInfo>begin("tag")
+                .times(2).consecutive();
+      /*  // CEP PATTERN FOR LAST、VAR、TREND
+        // 定义匹配规则
+        Pattern<TagKafkaInfo, TagKafkaInfo> pattern = Pattern.<TagKafkaInfo>begin("tag")
+                .times(2).consecutive();
+        System.out.println("init:---" + pattern);
+
+
+        SingleOutputStreamOperator<TagKafkaInfo> cepLASTDS = lastDs
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
+                                .withTimestampAssigner(new SerializableTimestampAssigner<TagKafkaInfo>() {
+                                    @Override
+                                    public long extractTimestamp(TagKafkaInfo tagKafkaInfo, long l) {
+                                        return tagKafkaInfo.getTimestamp();
+                                    }
+                                })
+
+                )
+                .keyBy(r -> r.getBytName())
+                .process(new CepProcessFunc());
+
+        cepLASTDS.print("cep:");
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = CEP
+                .pattern(cepLASTDS.keyBy(r -> r.getBytName()), pattern)
+                .registerListener(new CepListener<TagKafkaInfo>() {
+                    @Override
+                    public Boolean needChange(TagKafkaInfo tagKafkaInfo) {
+                        return tagKafkaInfo.getChangeNFA();
+                    }
+
+                    @Override
+                    public Pattern<TagKafkaInfo, ?> returnPattern(TagKafkaInfo tagKafkaInfo) {
+                        Integer n = tagKafkaInfo.getCurrNBefore();
+                        System.out.println("接收到数据:" + n + "感知到切换逻辑");
+                        Pattern<TagKafkaInfo, TagKafkaInfo> p = Pattern.<TagKafkaInfo>begin("tag")
+                                .times(n + 1).consecutive();
+                        System.out.println("P-----:" + p);
+                        return p;
+                    }
+                })
+                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .name("LAST");*/
+
+
+        SingleOutputStreamOperator<TagKafkaInfo> cepTRENDDS = trendDs
+                .keyBy(r -> r.getBytName())
+                .process(new CepProcessFunc());
+        SingleOutputStreamOperator<TagKafkaInfo> resultTRENDDS = CEP
+                .pattern(cepTRENDDS.keyBy(r -> r.getBytName()), pattern)
+                .registerListener(new CepListener<TagKafkaInfo>() {
+                    @Override
+                    public Boolean needChange(TagKafkaInfo tagKafkaInfo) {
+                        return tagKafkaInfo.getChangeNFA();
+                    }
+
+                    @Override
+                    public Pattern<TagKafkaInfo, ?> returnPattern(TagKafkaInfo tagKafkaInfo) {
+                        Integer n = tagKafkaInfo.getCurrNBefore();
+                        System.out.println("接收到数据:" + n + "感知到切换逻辑");
+                        return Pattern.<TagKafkaInfo>begin("tag")
+                                .times(n + 1)
+                                .consecutive();
+                    }
+                })
+                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .name("TREND");
+
+
+
+        SingleOutputStreamOperator<TagKafkaInfo> cepVARDS = varDs
+                .keyBy(r -> r.getBytName())
+                .process(new CepProcessFunc());
+
+        SingleOutputStreamOperator<TagKafkaInfo> resultVARDS = CEP
+                .pattern(cepVARDS.keyBy(r -> r.getBytName()), pattern)
+                .registerListener(new CepListener<TagKafkaInfo>() {
+                    @Override
+                    public Boolean needChange(TagKafkaInfo tagKafkaInfo) {
+                        return tagKafkaInfo.getChangeNFA();
+                    }
+
+                    @Override
+                    public Pattern<TagKafkaInfo, ?> returnPattern(TagKafkaInfo tagKafkaInfo) {
+                        Integer n = tagKafkaInfo.getCurrNBefore();
+                        System.out.println("接收到数据:" + n + "感知到切换逻辑");
+                        return Pattern.<TagKafkaInfo>begin("tag")
+                                .times(n + 1)
+                                .consecutive();
+                    }
+                })
+                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .name("VAR");
+
 
         SingleOutputStreamOperator<TagKafkaInfo> resultKFDS = kfDs.keyBy(r -> r.getBytName())
                 .process(new KfProcessFunc(dwdOutPutTag))
@@ -368,14 +479,16 @@ public class Dwd2DwsDynamicCalculationJob {
                 .union(
                         sideOutputMAX, sideOutputMIN, sideOutputLAST,
                         sideOutputMEDIAN, sideOutputCV, sideOutputDEJUMP,
-                        sideOutputFOF, sideOutputINTERP, sideOutputTREND,
-                        sideOutputVAR, sideOutputPSEQ, sideOutputRANGE,
+                        sideOutputFOF, sideOutputINTERP,
+                        sideOutputTREND,
+                        sideOutputVAR,
+                        sideOutputPSEQ, sideOutputRANGE,
                         sideOutputSLOPE, sideOutputSTD, sideOutputVARIANCE,
                         sideOutputSUM, sideOutputKF
                 )
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
-        dwdResult.print("dwd>>>");
+        //dwdResult.print("dwd>>>");
         dwdResult.addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC)))
                 .name("dwd-sink");
 
@@ -384,10 +497,11 @@ public class Dwd2DwsDynamicCalculationJob {
                 .union(
                         resultMAXDS, resultMINDS, resultLASTDS,
                         resultMEDIANDS, resultCVDS, resultDEJUMPDS,
-                        resultFOFDS, resultINTERPDS, resultTRENDDS,
-                        resultVARDS, resultPSEQDS, resultRANGEDS,
+                        resultFOFDS, resultINTERPDS,
+                        resultTRENDDS, resultVARDS,
+                        resultPSEQDS, resultRANGEDS,
                         resultSLOPEDS, resultSTDDS, resultVARIANCEDS,
-                        resultSUMDS, rawDs, sideOutputKF
+                        resultSUMDS, rawDs, resultKFDS
                 );
         // send to kafka
         dwsResult
@@ -404,9 +518,6 @@ public class Dwd2DwsDynamicCalculationJob {
         DataStream<TagKafkaInfo> secondResult = minuteResult.getSideOutput(secondOutPutTag); // 秒级别数据
         DataStream<TagKafkaInfo> preResult = minuteResult.getSideOutput(preOutPutTag); // 中间算子回流数据
 
-        //secondResult.print("second<><><>");
-        //minuteResult.print("minute++++++");
-        //preResult.print("pre------");
 
         // send to kafka(tag_pre)
         preResult
