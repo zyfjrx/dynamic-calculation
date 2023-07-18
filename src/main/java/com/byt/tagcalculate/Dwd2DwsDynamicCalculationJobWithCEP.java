@@ -371,7 +371,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                         return p;
                     }
                 })
-                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .process(new LastCepPatternProcessFunc(dwdOutPutTag))
                 .name("LAST");
 
 
@@ -405,7 +405,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                                 .consecutive();
                     }
                 })
-                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .process(new TrendCepPatternProcessFunc(dwdOutPutTag))
                 .name("TREND");
 
 
@@ -441,7 +441,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                                 .consecutive();
                     }
                 })
-                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .process(new VarCepPatternProcessFunc(dwdOutPutTag))
                 .name("VAR");
 
 

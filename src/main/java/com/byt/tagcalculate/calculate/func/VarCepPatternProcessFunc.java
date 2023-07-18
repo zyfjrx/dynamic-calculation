@@ -7,6 +7,7 @@ import org.apache.flink.cep.functions.PatternProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -15,10 +16,10 @@ import java.util.Map;
  * @author: zhangyf
  * @date: 2023/7/17 12:37
  **/
-public class CepPatternProcessFunc extends PatternProcessFunction<TagKafkaInfo, TagKafkaInfo> {
+public class VarCepPatternProcessFunc extends PatternProcessFunction<TagKafkaInfo, TagKafkaInfo> {
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
 
-    public CepPatternProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {
+    public VarCepPatternProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {
         this.dwdOutPutTag = dwdOutPutTag;
     }
 
@@ -36,7 +37,8 @@ public class CepPatternProcessFunc extends PatternProcessFunction<TagKafkaInfo, 
         }
         TagKafkaInfo newTag = new TagKafkaInfo();
         BeanUtils.copyProperties(newTag, second);
-        newTag.setValue(first.getValue());
+        BigDecimal diffValue = second.getValue().subtract(first.getValue());
+        newTag.setValue(diffValue);
         BytTagUtil.outputByKeyed(newTag, context, collector, dwdOutPutTag);
     }
 }
