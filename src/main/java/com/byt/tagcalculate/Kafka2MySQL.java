@@ -4,7 +4,7 @@ import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.func.BatchOutAllWindowFunction;
 import com.byt.tagcalculate.sink.DbResultBatchSink;
 import com.byt.common.utils.ConfigManager;
-import com.byt.common.utils.MyKafkaUtilDev;
+import com.byt.common.utils.MyKafkaUtil;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -21,7 +21,7 @@ public class Kafka2MySQL {
 
         env
                 // 2.1 添加数据源
-                .addSource(MyKafkaUtilDev.getKafkaPojoConsumerWM(
+                .addSource(MyKafkaUtil.getKafkaPojoConsumerWM(
                         ConfigManager.getProperty("kafka.dws.topic"),
                         "Kafka2MySQL")
                 )

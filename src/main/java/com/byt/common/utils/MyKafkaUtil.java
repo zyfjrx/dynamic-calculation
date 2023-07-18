@@ -22,7 +22,7 @@ import java.util.Properties;
  * @author: zhang
  * @date: 2022/8/17 14:27
  */
-public class MyKafkaUtilDev {
+public class MyKafkaUtil {
 
 
     private static String defaultTopic = "DWD_DEFAULT_TOPIC";

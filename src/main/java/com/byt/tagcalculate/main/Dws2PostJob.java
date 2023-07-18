@@ -10,7 +10,7 @@ import com.byt.tagcalculate.func.PostJsonFunc;
 import com.byt.tagcalculate.func.Value2PNameAndValue;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.common.utils.ConfigManager;
-import com.byt.common.utils.MyKafkaUtilDev;
+import com.byt.common.utils.MyKafkaUtil;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -40,7 +40,7 @@ public class Dws2PostJob {
 
         // 第一次广播，为数据划分属于的postName
         SingleOutputStreamOperator<Tuple2<String, TagKafkaInfo>> broadcast1 = env
-                .addSource(MyKafkaUtilDev.getKafkaPojoConsumerWM(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC), "test"))
+                .addSource(MyKafkaUtil.getKafkaPojoConsumerWM(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC), "test"))
                 .connect(broadcastDim)
                 .process(new Value2PNameAndValue());
         broadcast1.print("1>>>>>>>>");
@@ -58,7 +58,7 @@ public class Dws2PostJob {
             public String map(Tuple2<String, String> tuple2) throws Exception {
                 return tuple2.f1;
             }
-        }).addSink(MyKafkaUtilDev.getKafkaProducer("post_test_data"));
+        }).addSink(MyKafkaUtil.getKafkaProducer("post_test_data"));
         AsyncDataStream.orderedWait(postDS,new AsyncTagsPost(),10000, TimeUnit.MILLISECONDS,100);
         env.execute("post_arithmetic_job");
     }

@@ -1,7 +1,7 @@
 package com.byt.tagcalculate;
 
 import com.byt.common.utils.ConfigManager;
-import com.byt.common.utils.MyKafkaUtilDev;
+import com.byt.common.utils.MyKafkaUtil;
 import com.byt.common.utils.SideOutPutTagUtil;
 import com.byt.tagcalculate.calculate.func.*;
 import com.byt.tagcalculate.constants.PropertiesConstants;
@@ -59,7 +59,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
 
         SingleOutputStreamOperator<TagKafkaInfo> tagKafkaInfoDataStreamSource = env
                 // 2.1 添加数据源
-                .addSource(MyKafkaUtilDev.getKafkaPojoConsumerWM(
+                .addSource(MyKafkaUtil.getKafkaPojoConsumerWM(
                         ConfigManager.getProperty("kafka.dwd.topic"),
                         "test_" + System.currentTimeMillis())
                 )
@@ -470,7 +470,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
         //dwdResult.print("dwd>>>");
-        dwdResult.addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC)))
+        dwdResult.addSink(MyKafkaUtil.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC)))
                 .name("dwd-sink");
 
         // union计算完成数据
@@ -487,7 +487,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
         // send to kafka
         dwsResult
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
-                .addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC)))
+                .addSink(MyKafkaUtil.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC)))
                 .name("dws-sink");
 
         dwsResult.print("dws<<<");
@@ -505,7 +505,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                 .keyBy(r -> r.getTime())
                 .window(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new PreProcessFunction())
-                .addSink(MyKafkaUtilDev.getProducerWithTopicData())
+                .addSink(MyKafkaUtil.getProducerWithTopicData())
                 .name("中间算子回流");
 
         // send to mysql 分钟级别数据

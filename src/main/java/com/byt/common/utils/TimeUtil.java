@@ -45,12 +45,4 @@ public class TimeUtil {
         return s1;
     }
 
-//    public static void main(String[] args) {
-//        long l = getStartTime("20200830202000");
-//        System.out.println(l);
-//        System.out.println(getCurrentTimeStr());
-//        Timestamp t = Timestamp.valueOf("2021-09-27 10:11:00");
-//        System.out.println(getStartTime("2021-09-27 10:11:00"));
-//    }
-
 }
