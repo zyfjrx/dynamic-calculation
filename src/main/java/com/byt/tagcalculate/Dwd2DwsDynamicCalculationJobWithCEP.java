@@ -329,13 +329,8 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                 .process(new FofProcessFunc(dwdOutPutTag))
                 .name("FOF");
 
-        SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs.keyBy(r -> r.getBytName())
-                .process(new LastProcessFunc(dwdOutPutTag))
-                .name("last");
 
-        Pattern<TagKafkaInfo, TagKafkaInfo> pattern = Pattern.<TagKafkaInfo>begin("tag")
-                .times(2).consecutive();
-      /*  // CEP PATTERN FOR LAST、VAR、TREND
+        // CEP PATTERN FOR LAST、VAR、TREND
         // 定义匹配规则
         Pattern<TagKafkaInfo, TagKafkaInfo> pattern = Pattern.<TagKafkaInfo>begin("tag")
                 .times(2).consecutive();
@@ -377,10 +372,20 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                     }
                 })
                 .process(new CepPatternProcessFunc(dwdOutPutTag))
-                .name("LAST");*/
+                .name("LAST");
 
 
         SingleOutputStreamOperator<TagKafkaInfo> cepTRENDDS = trendDs
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
+                                .withTimestampAssigner(new SerializableTimestampAssigner<TagKafkaInfo>() {
+                                    @Override
+                                    public long extractTimestamp(TagKafkaInfo tagKafkaInfo, long l) {
+                                        return tagKafkaInfo.getTimestamp();
+                                    }
+                                })
+
+                )
                 .keyBy(r -> r.getBytName())
                 .process(new CepProcessFunc());
         SingleOutputStreamOperator<TagKafkaInfo> resultTRENDDS = CEP
@@ -406,6 +411,16 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
 
 
         SingleOutputStreamOperator<TagKafkaInfo> cepVARDS = varDs
+                .assignTimestampsAndWatermarks(
+                        WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
+                                .withTimestampAssigner(new SerializableTimestampAssigner<TagKafkaInfo>() {
+                                    @Override
+                                    public long extractTimestamp(TagKafkaInfo tagKafkaInfo, long l) {
+                                        return tagKafkaInfo.getTimestamp();
+                                    }
+                                })
+
+                )
                 .keyBy(r -> r.getBytName())
                 .process(new CepProcessFunc());
 
