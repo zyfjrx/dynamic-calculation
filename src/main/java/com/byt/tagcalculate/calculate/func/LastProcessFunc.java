@@ -24,7 +24,6 @@ import java.util.Queue;
  **/
 public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo> {
     private  OutputTag<TagKafkaInfo> dwdOutPutTag;
-    //private transient Queue<TagKafkaInfo> lastQueue;
     private MapState<String , Queue<TagKafkaInfo>> mapState;
 
     public LastProcessFunc(OutputTag<TagKafkaInfo> dwdOutPutTag) {
@@ -33,7 +32,6 @@ public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, 
 
     @Override
     public void open(Configuration parameters) throws Exception {
-        //lastQueue = new LinkedList<>();
         mapState = getRuntimeContext().getMapState(
                 new MapStateDescriptor<String, Queue<TagKafkaInfo>>(
                         "map",
@@ -49,13 +47,12 @@ public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, 
         Integer nBefore = value.getCurrNBefore();
         String key = value.getBytName();
         if (!mapState.contains(key)){
-            LinkedList<TagKafkaInfo> linkedList = new LinkedList<>();
-            linkedList.add(value);
-            mapState.put(key,linkedList);
+            Queue<TagKafkaInfo> lastQueue = new LinkedList<>();
+            lastQueue.offer(value);
+            mapState.put(key,lastQueue);
         } else {
             mapState.get(key).offer(value);
         }
-
         if (mapState.get(key).size() > nBefore){
             TagKafkaInfo tagKafkaInfo = mapState.get(key).poll();
             BigDecimal tagKafkaInfoValue = tagKafkaInfo.getValue();
