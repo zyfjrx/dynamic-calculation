@@ -33,11 +33,11 @@ public class Test {
 
 //		数据源
         SingleOutputStreamOperator<Tuple3<String, Long, String>> source = env.fromElements(
-                new Tuple3<String, Long, String>("a", 1000000001000L, "22")
+                new Tuple3<String, Long, String>("a", 1000000001000L, "5000")
                 , new Tuple3<String, Long, String>("b", 1000000002000L, "23")
                 , new Tuple3<String, Long, String>("c", 1000000003000L, "23")
                 , new Tuple3<String, Long, String>("d", 1000000003000L, "23")
-                , new Tuple3<String, Long, String>("change", 1000000003001L, "23")
+                , new Tuple3<String, Long, String>("a", 1000000003001L, "23")
                 , new Tuple3<String, Long, String>("e", 1000000004000L, "24")
                 , new Tuple3<String, Long, String>("f", 1000000005000L, "23")
                 , new Tuple3<String, Long, String>("g", 1000000006000L, "23")

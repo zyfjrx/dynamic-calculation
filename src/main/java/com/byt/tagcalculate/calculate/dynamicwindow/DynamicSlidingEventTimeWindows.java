@@ -101,15 +101,15 @@ public class DynamicSlidingEventTimeWindows<T> extends WindowAssigner<T, TimeWin
     }
 
 
-    public static DynamicSlidingEventTimeWindows of(Time size, Time slide, TimeAdjustExtractor sizeTimeAdjustExtractor, TimeAdjustExtractor slideTimeAdjustExtractor) {
-        return new DynamicSlidingEventTimeWindows(
+    public static <T> DynamicSlidingEventTimeWindows<T> of(Time size, Time slide, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
+        return new DynamicSlidingEventTimeWindows<T>(
                 size.toMilliseconds(), slide.toMilliseconds(), 0,
                 sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
     }
 
 
-    public static DynamicSlidingEventTimeWindows of(Time size, Time slide, Time offset, TimeAdjustExtractor sizeTimeAdjustExtractor, TimeAdjustExtractor slideTimeAdjustExtractor) {
-        return new DynamicSlidingEventTimeWindows(
+    public static <T> DynamicSlidingEventTimeWindows<T> of(Time size, Time slide, Time offset, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
+        return new DynamicSlidingEventTimeWindows<T>(
                 size.toMilliseconds(), slide.toMilliseconds(), offset.toMilliseconds(),
                 sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
     }

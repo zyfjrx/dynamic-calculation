@@ -95,14 +95,14 @@ public class DynamicSlidingProcessingTimeWindows<T> extends WindowAssigner<T, Ti
         return new DynamicSlidingProcessingTimeWindows(5 * 1000L, 5 * 1000L, 0L,sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
     }
 
-    public static DynamicSlidingProcessingTimeWindows of(Time size, Time slide, Time offset, TimeAdjustExtractor sizeTimeAdjustExtractor, TimeAdjustExtractor slideTimeAdjustExtractor) {
-        return new DynamicSlidingProcessingTimeWindows(
+    public static <T>DynamicSlidingProcessingTimeWindows<T> of(Time size, Time slide, Time offset, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
+        return new DynamicSlidingProcessingTimeWindows<T>(
                 size.toMilliseconds(), slide.toMilliseconds(), offset.toMilliseconds(),
                 sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
     }
 
-    public static DynamicSlidingProcessingTimeWindows of(Time size, Time slide, TimeAdjustExtractor sizeTimeAdjustExtractor, TimeAdjustExtractor slideTimeAdjustExtractor) {
-        return new DynamicSlidingProcessingTimeWindows(
+    public static <T>DynamicSlidingProcessingTimeWindows<T> of(Time size, Time slide, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
+        return new DynamicSlidingProcessingTimeWindows<T>(
                 size.toMilliseconds(), slide.toMilliseconds(), 0,
                 sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
     }
