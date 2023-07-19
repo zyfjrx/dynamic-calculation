@@ -37,14 +37,14 @@ public class DynamicSlidingProcessingTimeWindows<T> extends WindowAssigner<T, Ti
             this.sizeTimeAdjustExtractor = (ele) -> 0;
             this.slideTimeAdjustExtractor = (ele) -> 0;
         } else {
-            throw new IllegalArgumentException("DynamicProcessingTimeWindows parameters must satisfy abs(offset) < slide and size > 0");
+            throw new IllegalArgumentException("DynamicSlidingProcessingTimeWindows parameters must satisfy abs(offset) < slide and size > 0");
         }
     }
 
     public DynamicSlidingProcessingTimeWindows(long size, long offset, long slide, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
         if (Math.abs(offset) >= slide || size <= 0) {
             throw new IllegalArgumentException(
-                    "DynamicProcessingTimeWindows parameters must satisfy "
+                    "DynamicSlidingProcessingTimeWindows parameters must satisfy "
                             + "abs(offset) < slide and size > 0");
         }
         this.size = size;
