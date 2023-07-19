@@ -1,6 +1,5 @@
 package com.byt.tagcalculate.calculate.dynamicwindow;
 
-import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -43,6 +42,11 @@ public class DynamicSlidingProcessingTimeWindows<T> extends WindowAssigner<T, Ti
     }
 
     public DynamicSlidingProcessingTimeWindows(long size, long offset, long slide, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
+        if (Math.abs(offset) >= slide || size <= 0) {
+            throw new IllegalArgumentException(
+                    "DynamicProcessingTimeWindows parameters must satisfy "
+                            + "abs(offset) < slide and size > 0");
+        }
         this.size = size;
         this.offset = offset;
         this.slide = slide;
@@ -81,17 +85,26 @@ public class DynamicSlidingProcessingTimeWindows<T> extends WindowAssigner<T, Ti
         return new DynamicSlidingProcessingTimeWindows(size.toMilliseconds(), slide.toMilliseconds(), 0L);
     }
 
-    public static <T> DynamicSlidingEventTimeWindows<T> of(TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
-        return new DynamicSlidingEventTimeWindows(5 * 1000L, 5 * 1000L, 0L,sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
-    }
 
-    public static DynamicSlidingProcessingTimeWindows of() {
-        // 默认值 数据流中没有开窗参数时使用
-        return new DynamicSlidingProcessingTimeWindows(5 * 1000L, 5 * 1000L, 0L);
-    }
 
     public static DynamicSlidingProcessingTimeWindows of(Time size, Time slide, Time offset) {
         return new DynamicSlidingProcessingTimeWindows(size.toMilliseconds(), slide.toMilliseconds(), offset.toMilliseconds());
+    }
+
+    public static <T> DynamicSlidingProcessingTimeWindows<T> of(TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
+        return new DynamicSlidingProcessingTimeWindows(5 * 1000L, 5 * 1000L, 0L,sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
+    }
+
+    public static DynamicSlidingProcessingTimeWindows of(Time size, Time slide, Time offset, TimeAdjustExtractor sizeTimeAdjustExtractor, TimeAdjustExtractor slideTimeAdjustExtractor) {
+        return new DynamicSlidingProcessingTimeWindows(
+                size.toMilliseconds(), slide.toMilliseconds(), offset.toMilliseconds(),
+                sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
+    }
+
+    public static DynamicSlidingProcessingTimeWindows of(Time size, Time slide, TimeAdjustExtractor sizeTimeAdjustExtractor, TimeAdjustExtractor slideTimeAdjustExtractor) {
+        return new DynamicSlidingProcessingTimeWindows(
+                size.toMilliseconds(), slide.toMilliseconds(), 0,
+                sizeTimeAdjustExtractor,slideTimeAdjustExtractor);
     }
 
 
