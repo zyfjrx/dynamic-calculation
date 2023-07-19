@@ -389,7 +389,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 )
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
-        //dwdResult.print("dwd>>>");
+        dwdResult.print("dwd>>>");
         dwdResult.addSink(MyKafkaUtilDev.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC)))
                 .name("dwd-sink");
 // ======================================================= DWD =========================================================
