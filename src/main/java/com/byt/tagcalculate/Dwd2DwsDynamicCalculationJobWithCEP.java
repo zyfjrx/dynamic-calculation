@@ -329,13 +329,8 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                 .process(new FofProcessFunc(dwdOutPutTag))
                 .name("FOF");
 
-        SingleOutputStreamOperator<TagKafkaInfo> resultLASTDS = lastDs.keyBy(r -> r.getBytName())
-                .process(new LastProcessFunc(dwdOutPutTag))
-                .name("last");
 
-        Pattern<TagKafkaInfo, TagKafkaInfo> pattern = Pattern.<TagKafkaInfo>begin("tag")
-                .times(2).consecutive();
-      /*  // CEP PATTERN FOR LAST、VAR、TREND
+        // CEP PATTERN FOR LAST、VAR、TREND
         // 定义匹配规则
         Pattern<TagKafkaInfo, TagKafkaInfo> pattern = Pattern.<TagKafkaInfo>begin("tag")
                 .times(2).consecutive();
@@ -376,8 +371,8 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                         return p;
                     }
                 })
-                .process(new CepPatternProcessFunc(dwdOutPutTag))
-                .name("LAST");*/
+                .process(new LastCepPatternProcessFunc(dwdOutPutTag))
+                .name("LAST");
 
 
         SingleOutputStreamOperator<TagKafkaInfo> cepTRENDDS = trendDs
@@ -400,7 +395,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                                 .consecutive();
                     }
                 })
-                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .process(new TrendCepPatternProcessFunc(dwdOutPutTag))
                 .name("TREND");
 
 
@@ -426,7 +421,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                                 .consecutive();
                     }
                 })
-                .process(new CepPatternProcessFunc(dwdOutPutTag))
+                .process(new VarCepPatternProcessFunc(dwdOutPutTag))
                 .name("VAR");
 
 
