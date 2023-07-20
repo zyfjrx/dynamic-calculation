@@ -55,8 +55,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
         OutputTag<TagKafkaInfo> secondOutPutTag = new OutputTag<TagKafkaInfo>("side-output-second") {
         };
         OutputTag<TagKafkaInfo> preOutPutTag = new OutputTag<TagKafkaInfo>("side-output-pre") {
-        };
-        // 中间算子回流通道
+        }; // 中间算子回流通道
 
         SingleOutputStreamOperator<TagKafkaInfo> tagKafkaInfoDataStreamSource = env
                 // 2.1 添加数据源
