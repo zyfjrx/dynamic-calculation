@@ -21,7 +21,7 @@ public class Kafka2MySQL {
 
         env
                 // 2.1 添加数据源
-                .addSource(MyKafkaUtil.getKafkaPojoConsumerWM(
+                .addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         ConfigManager.getProperty("kafka.dws.topic"),
                         "Kafka2MySQL")
                 )

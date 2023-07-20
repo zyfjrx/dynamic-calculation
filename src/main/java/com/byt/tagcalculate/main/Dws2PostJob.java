@@ -40,7 +40,7 @@ public class Dws2PostJob {
 
         // 第一次广播，为数据划分属于的postName
         SingleOutputStreamOperator<Tuple2<String, TagKafkaInfo>> broadcast1 = env
-                .addSource(MyKafkaUtil.getKafkaPojoConsumerWM(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC), "test"))
+                .addSource(MyKafkaUtil.getKafkaPojoConsumer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC), "test"))
                 .connect(broadcastDim)
                 .process(new Value2PNameAndValue());
         broadcast1.print("1>>>>>>>>");

@@ -56,7 +56,7 @@ public class Dwd2DwsDynamicCalculationJob {
 
         SingleOutputStreamOperator<TagKafkaInfo> kafkaSource = env
                 // 2.1 添加数据源
-                .addSource(MyKafkaUtil.getKafkaPojoConsumerWM(
+                .addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         ConfigManager.getProperty("kafka.dwd.topic"),
                         "test_" + System.currentTimeMillis())
                 )

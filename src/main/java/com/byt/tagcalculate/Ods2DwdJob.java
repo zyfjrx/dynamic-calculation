@@ -48,7 +48,7 @@ public class Ods2DwdJob {
         DataStreamSource<List<TagKafkaInfo>> kafkaDS = env
                 .addSource(
                         MyKafkaUtil
-                                .getKafkaListConsumerWM(ConfigManager.getListProperty("kafka.ods.topic"),
+                                .getKafkaListConsumer(ConfigManager.getListProperty("kafka.ods.topic"),
                                         "test21111qqq"
                                 ));
         // 连接两个流 connect()

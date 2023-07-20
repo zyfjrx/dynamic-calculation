@@ -45,4 +45,32 @@ public class TimeUtil {
         return s1;
     }
 
+
+    public static Long toTimeMillis(String str) {
+        Long millis = null;
+        if (str.contains("h")) {
+            Long nh = Long.parseLong(str.replace("h", ""));
+            millis = nh * 60L * 60L * 1000L;
+
+        } else if (str.contains("m")) {
+            Long nm = Long.parseLong(str.replace("m", ""));
+            millis = nm * 60L * 1000L;
+        } else {
+            Long ns = Long.parseLong(str.replace("s", ""));
+            millis = ns * 1000L;
+        }
+        return millis;
+
+    }
+
+
+
+    public static String getCurrentTimeString() {
+        SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
+//        sdf.applyPattern("yyyyMMddHHmmss");// a为am/pm的标记
+        sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
+        Date date = new Date();// 获取当前时间
+        return sdf.format(date);
+    }
+
 }

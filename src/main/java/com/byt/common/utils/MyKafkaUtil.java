@@ -43,7 +43,7 @@ public class MyKafkaUtil {
      * @param groupId
      * @return
      */
-    public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumerWM(List<String> topic, String groupId) {
+    public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumer(List<String> topic, String groupId) {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         FlinkKafkaConsumer<List<TagKafkaInfo>> kafkaConsumer = new FlinkKafkaConsumer<List<TagKafkaInfo>>(
                 topic,
@@ -54,21 +54,6 @@ public class MyKafkaUtil {
     }
 
 
-    /**
-     * 消费kafka数据转化为pojo类 no Watermark
-     *
-     * @param topic
-     * @param groupId
-     * @return
-     */
-    public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumer(String topic, String groupId) {
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        return new FlinkKafkaConsumer<TagKafkaInfo>(
-                topic,
-                new TagInfoDeserializationSchema(),
-                properties
-        );
-    }
 
     /**
      * 消费kafka数据转化为pojo类 Watermark
@@ -77,7 +62,7 @@ public class MyKafkaUtil {
      * @param groupId
      * @return
      */
-    public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumerWM(String topic, String groupId) {
+    public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumer(String topic, String groupId) {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
                 topic,
