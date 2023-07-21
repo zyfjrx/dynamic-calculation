@@ -41,7 +41,7 @@ public class DynamicSlidingEventTimeWindows<T> extends WindowAssigner<T, TimeWin
     }
 
 
-    public DynamicSlidingEventTimeWindows(long size, long offset, long slide, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
+    public DynamicSlidingEventTimeWindows(long size, long slide, long offset, TimeAdjustExtractor<T> sizeTimeAdjustExtractor, TimeAdjustExtractor<T> slideTimeAdjustExtractor) {
         if (Math.abs(offset) >= slide || size <= 0) {
             throw new IllegalArgumentException(
                     "DynamicSlidingEventTimeWindows parameters must satisfy "

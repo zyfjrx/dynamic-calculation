@@ -357,7 +357,7 @@ public class Dwd2DwsDynamicCalculationJob {
         SingleOutputStreamOperator<TagKafkaInfo> resultKFDS = kafkaSource
                 .getSideOutput(sideOutPutTags.get(PropertiesConstants.KF))
                 .keyBy(r -> r.getBytName())
-                .process(new KfProcessFunc(dwdOutPutTag))
+                .process(new KfProcessFuncOld(dwdOutPutTag))
                 .name("KF");
 
 //  ===============================================  获取对应算子计算完毕   ================================================
