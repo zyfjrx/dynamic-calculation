@@ -48,8 +48,8 @@ public class DynamicSlidingEventTimeWindows<T> extends WindowAssigner<T, TimeWin
                             + "abs(offset) < slide and size > 0");
         }
         this.size = size;
-        this.offset = offset;
         this.slide = slide;
+        this.offset = offset;
         this.sizeTimeAdjustExtractor = sizeTimeAdjustExtractor;
         this.slideTimeAdjustExtractor = slideTimeAdjustExtractor;
     }
