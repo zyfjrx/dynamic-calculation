@@ -20,11 +20,12 @@ import java.math.BigDecimal;
 /**
  * @title: 卡尔曼滤波器 kalman filter
  * @author: zhangyifan
- * @date: 2023/7/12 13:47
+ * @date: 2023/7/21 14:47
  */
 public class KfProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo> {
 
     private ValueState<Tuple2<RealMatrix, RealMatrix>> KFState;
+    private ValueState<Tuple2<Double, Double>> KFParams;
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
 
 
@@ -37,6 +38,24 @@ public class KfProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, Ta
         this.dwdOutPutTag = dwdOutPutTag;
     }
 
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+
+        KFState = getRuntimeContext().getState(
+                new ValueStateDescriptor<Tuple2<RealMatrix, RealMatrix>>(
+                        "KFState",
+                        TypeInformation.of(new TypeHint<Tuple2<RealMatrix, RealMatrix>>() {
+                        }))
+        );
+
+        KFParams = getRuntimeContext().getState(
+                new ValueStateDescriptor<Tuple2<Double, Double>>(
+                        "kfParams",
+                        TypeInformation.of(new TypeHint<Tuple2<Double, Double>>() {
+                        }))
+        );
+    }
 
     public void predict() throws IOException {
         Tuple2<RealMatrix, RealMatrix> kfs = KFState.value();
@@ -70,41 +89,39 @@ public class KfProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, Ta
 
 
     @Override
-    public void open(Configuration parameters) throws Exception {
-        ValueStateDescriptor<Tuple2<RealMatrix, RealMatrix>> KFStateDescriptor =
-                new ValueStateDescriptor<Tuple2<RealMatrix, RealMatrix>>(
-                        "KFState",
-                        TypeInformation.of(new TypeHint<Tuple2<RealMatrix, RealMatrix>>() {
-                        })
-                );
-        KFState = getRuntimeContext().getState(KFStateDescriptor);
-    }
-
-    @Override
     public void processElement(TagKafkaInfo value, KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
         double measurement = value.getValue().doubleValue();
         double[] measurements = {measurement};
         Double dt = value.getDt();
         Double r = value.getR();
-        if (dt != null && r != null) {
-            double nowValue = value.getValue().doubleValue();
-            Tuple2<RealMatrix, RealMatrix> kfs = KFState.value();
-            if (kfs == null) {
-                RealMatrix X = MatrixUtils.createRealMatrix(new double[][]{{measurement}, {0}}); // 初始状态向量
-                RealMatrix P = MatrixUtils.createRealMatrix(new double[][]{{1,0},{0,1}}); // 状态协方差矩阵
-                A = MatrixUtils.createRealMatrix(new double[][]{{1, dt}, {0, 1}}); // 状态转换矩阵
-                Q = MatrixUtils.createRealMatrix(new double[][]{{0.05, 0.05}, {0.05, 0.05}});
-                H = MatrixUtils.createRealMatrix(new double[][]{{1,0}});
+        if (KFParams.value() == null) {
+            KFParams.update(Tuple2.of(dt, r));
+        } else {
+            if (KFParams.value().f0 != dt) {
+                A = MatrixUtils.createRealMatrix(new double[][]{{1, dt}, {0, 1}});
+                KFParams.value().setField(dt, 0);
+            } else if (KFParams.value().f1 != r) {
                 R = MatrixUtils.createRealMatrix(new double[][]{{r}});
-                KFState.update(Tuple2.of(X, P));
+                KFParams.value().setField(r, 1);
             }
-            predict();
-            double result = KFState.value().f0.getEntry(0, 0);
-            RealMatrix measurementMatrix = MatrixUtils.createRealMatrix(new double[][]{measurements});
-            update(measurementMatrix);
-            value.setValue(new BigDecimal(result).setScale(4, BigDecimal.ROUND_HALF_UP));
-            BytTagUtil.outputByKeyed(value, ctx, out, dwdOutPutTag);
-            out.collect(value);
         }
+
+        Tuple2<RealMatrix, RealMatrix> kfs = KFState.value();
+        if (kfs == null) {
+            RealMatrix X = MatrixUtils.createRealMatrix(new double[][]{{measurement}, {0}}); // 初始状态向量
+            RealMatrix P = MatrixUtils.createRealMatrix(new double[][]{{1, 0}, {0, 1}}); // 状态协方差矩阵
+            A = MatrixUtils.createRealMatrix(new double[][]{{1, KFParams.value().f0}, {0, 1}}); // 状态转换矩阵
+            Q = MatrixUtils.createRealMatrix(new double[][]{{0.05, 0.05}, {0.05, 0.05}});
+            H = MatrixUtils.createRealMatrix(new double[][]{{1, 0}});
+            R = MatrixUtils.createRealMatrix(new double[][]{{KFParams.value().f1}});
+            KFState.update(Tuple2.of(X, P));
+        }
+        predict();
+        double result = KFState.value().f0.getEntry(0, 0);
+        RealMatrix measurementMatrix = MatrixUtils.createRealMatrix(new double[][]{measurements});
+        update(measurementMatrix);
+        value.setValue(new BigDecimal(result).setScale(4, BigDecimal.ROUND_HALF_UP));
+        BytTagUtil.outputByKeyed(value, ctx, out, dwdOutPutTag);
+        out.collect(value);
     }
 }
