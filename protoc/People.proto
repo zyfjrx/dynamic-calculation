@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package com.byt.proto;
+
+option optimize_for = SPEED;
+option java_package = "com.byt.proto";
+option java_outer_classname = "DataInfo2";
+
+message People {
+  optional string name = 1;
+  optional string age = 2;
+  optional string address = 3;
+}

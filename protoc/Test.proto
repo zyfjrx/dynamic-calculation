@@ -1,0 +1,9 @@
+syntax = "proto2";
+message TagInfo {
+  optional string name = 1;
+  optional string time = 2;
+  optional string value = 3;
+}
+message TagInfoList {
+  repeated TagInfo taginfo = 1;
+}
