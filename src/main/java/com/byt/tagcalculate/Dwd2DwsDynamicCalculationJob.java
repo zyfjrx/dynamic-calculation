@@ -360,8 +360,20 @@ public class Dwd2DwsDynamicCalculationJob {
                 .process(new KfProcessFunc(dwdOutPutTag))
                 .name("KF");
 
-//  ===============================================  获取对应算子计算完毕   ================================================
+        SingleOutputStreamOperator<TagKafkaInfo> resultEMADS = kafkaSource
+                .getSideOutput(sideOutPutTags.get(PropertiesConstants.EMA))
+                .keyBy(r -> r.getBytName())
+                .process(new EmaProcessFunc(dwdOutPutTag))
+                .name("EMA");
 
+        SingleOutputStreamOperator<TagKafkaInfo> resultRSIDS = kafkaSource
+                .getSideOutput(sideOutPutTags.get(PropertiesConstants.RSI))
+                .keyBy(r -> r.getBytName())
+                .process(new RsiProcessFunc(dwdOutPutTag))
+                .name("EMA");
+
+
+//  ===============================================  获取对应算子计算完毕   ================================================
 
 
 // ====================================================== DWD =========================================================
@@ -385,7 +397,9 @@ public class Dwd2DwsDynamicCalculationJob {
                         resultSTDDS.getSideOutput(dwdOutPutTag),
                         resultVARIANCEDS.getSideOutput(dwdOutPutTag),
                         resultSUMDS.getSideOutput(dwdOutPutTag),
-                        resultKFDS.getSideOutput(dwdOutPutTag)
+                        resultKFDS.getSideOutput(dwdOutPutTag),
+                        resultEMADS.getSideOutput(dwdOutPutTag),
+                        resultRSIDS.getSideOutput(dwdOutPutTag)
                 )
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
@@ -404,8 +418,9 @@ public class Dwd2DwsDynamicCalculationJob {
                         resultFOFDS, resultINTERPDS, resultTRENDDS,
                         resultVARDS, resultPSEQDS, resultRANGEDS,
                         resultSLOPEDS, resultSTDDS, resultVARIANCEDS,
-                        resultSUMDS,  resultKFDS,
-                        kafkaSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.RAW))
+                        resultSUMDS, resultKFDS,
+                        kafkaSource.getSideOutput(sideOutPutTags.get(PropertiesConstants.RAW)),
+                        resultEMADS, resultRSIDS
                 );
         // send to kafka
         dwsResult

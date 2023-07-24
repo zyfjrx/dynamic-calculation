@@ -24,7 +24,7 @@ public class BytTagUtil {
     private static List<String> twoParamTimeCal = Arrays.asList(new String[]{"AVG", "INTERP", "VARIANCE", "STD", "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ", "SUM"});
     private static List<String> twoParamCal = Arrays.asList(new String[]{"KF"});
     private static List<String> dejumpParamCal = Arrays.asList(new String[]{"DEJUMP"});
-    private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "RAW"});
+    private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "RAW","EMA","RSI"});
     private static List<String> oneParamCalFOF = Arrays.asList(new String[]{"FOF"});
 
     private static Integer N = 0;

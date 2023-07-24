@@ -15,8 +15,13 @@ public class SideOutPutTagUtil {
 
     private static List<String> twoParamTimeCal = Arrays.asList(new String[]{"AVG", "INTERP", "VARIANCE", "STD", "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ","SUM"});
     private static List<String> twoParamCal = Arrays.asList(new String[]{"KF","DEJUMP"});
-    private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "FOF", "RAW"});
+    private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "FOF", "RAW","EMA","RSI"});
 
+    private static String[] allCal = new String[]{"AVG", "INTERP", "VARIANCE", "STD",
+            "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ","SUM",
+            "KF","DEJUMP",
+            "TREND", "VAR", "LAST", "FOF", "RAW","EMA","RSI"
+    };
 
     public static Set<String> getSideParams(String jobName) {
         Set<String> params = QueryDbUtil.getParams(jobName);
@@ -47,13 +52,7 @@ public class SideOutPutTagUtil {
 
     public static HashMap<String, OutputTag<TagKafkaInfo>> getSideOutPutTags() {
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutputTags = new HashMap<>();
-        for (String side : twoParamTimeCal) {
-            sideOutputTags.put(side,new OutputTag<TagKafkaInfo>(side){});
-        }
-        for (String side : twoParamCal) {
-            sideOutputTags.put(side,new OutputTag<TagKafkaInfo>(side){});
-        }
-        for (String side : oneParamCal) {
+        for (String side : allCal) {
             sideOutputTags.put(side,new OutputTag<TagKafkaInfo>(side){});
         }
         return sideOutputTags;

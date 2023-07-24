@@ -75,8 +75,8 @@ public class PropertiesConstants {
     public static final String SUM = "SUM";
     public static final String RAW = "RAW";
     public static final String KF = "KF";
-    public static final String DWD = "DWD";
-    public static final String CEP = "TREND_VAR_LAST";
+    public static final String EMA = "EMA";
+    public static final String RSI = "RSI";
 
 
 
