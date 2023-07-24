@@ -220,16 +220,7 @@
             <version>${druid.version}</version>
         </dependency>
 
-        <!-- flink-doris-connector -->
-        <!-- flink doris connector -->
-        <dependency>
-            <groupId>org.apache.doris</groupId>
-            <artifactId>flink-doris-connector-1.13_2.12</artifactId>
-            <version>1.0.3</version>
-            <scope>provided</scope>
-        </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
