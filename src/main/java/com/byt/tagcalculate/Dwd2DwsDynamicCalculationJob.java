@@ -99,7 +99,10 @@ public class Dwd2DwsDynamicCalculationJob {
                             }
                         }
                 ))
-                .process(new AvgProcessFunc(dwdOutPutTag))
+                .aggregate(
+                        new AvgAggregateFunction(),
+                        new ResultProcessWindowFunction(dwdOutPutTag)
+                )
                 .name("AVG");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMAXDS = kafkaSource
@@ -119,7 +122,10 @@ public class Dwd2DwsDynamicCalculationJob {
                             }
                         }
                 ))
-                .process(new MaxProcessFunc(dwdOutPutTag))
+                .aggregate(
+                        new MaxAggregateFunction(),
+                        new ResultProcessWindowFunction(dwdOutPutTag)
+                )
                 .name("MAX");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMINDS = kafkaSource
@@ -139,7 +145,10 @@ public class Dwd2DwsDynamicCalculationJob {
                             }
                         }
                 ))
-                .process(new MinProcessFunc(dwdOutPutTag))
+                .aggregate(
+                        new MinAggregateFunction(),
+                        new ResultProcessWindowFunction(dwdOutPutTag)
+                )
                 .name("MIN");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultMEDIANDS = kafkaSource
@@ -199,7 +208,10 @@ public class Dwd2DwsDynamicCalculationJob {
                             }
                         }
                 ))
-                .process(new InterpProcessFunc(dwdOutPutTag))
+                .aggregate(
+                        new InterpAggregateFunction(),
+                        new ResultProcessWindowFunction(dwdOutPutTag)
+                )
                 .name("INTERP");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultPSEQDS = kafkaSource
@@ -219,7 +231,10 @@ public class Dwd2DwsDynamicCalculationJob {
                             }
                         }
                 ))
-                .process(new PseqProcessFunc(dwdOutPutTag))
+                .aggregate(
+                        new PseqAggregateFunction(),
+                        new ResultProcessWindowFunction(dwdOutPutTag)
+                )
                 .name("PSEQ");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultRANGEDS = kafkaSource
@@ -239,7 +254,10 @@ public class Dwd2DwsDynamicCalculationJob {
                             }
                         }
                 ))
-                .process(new RangeProcessFunc(dwdOutPutTag))
+                .aggregate(
+                        new RangeAggregateFunction(),
+                        new ResultProcessWindowFunction(dwdOutPutTag)
+                )
                 .name("RANGE");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultSLOPEDS = kafkaSource
@@ -319,7 +337,11 @@ public class Dwd2DwsDynamicCalculationJob {
                             }
                         }
                 ))
-                .process(new SumProcessFunc(dwdOutPutTag))
+                .aggregate(
+                        new SumAggregateFunction(),
+                        new ResultProcessWindowFunction(dwdOutPutTag)
+                )
+                //.process(new SumProcessFunc(dwdOutPutTag))
                 .name("SUM");
 
         SingleOutputStreamOperator<TagKafkaInfo> resultDEJUMPDS = kafkaSource
