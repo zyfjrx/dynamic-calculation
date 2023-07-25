@@ -12,6 +12,7 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -35,6 +36,7 @@ public class Ods2DwdJob {
         // TODO 0.获取执行环境信息
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
+        env.setStateBackend(new EmbeddedRocksDBStateBackend());
         // TODO 1.定义广播状态描述器、读取配置流转换为广播流
         MapStateDescriptor<String, TagProperties> mapStateDescriptor = new MapStateDescriptor<>(
                 "map-state",
@@ -74,7 +76,7 @@ public class Ods2DwdJob {
                                 .getKafkaSinkBySchema(new KafkaSerializationSchema<String>() {
                                     @Override
                                     public ProducerRecord<byte[], byte[]> serialize(String s, @Nullable Long aLong) {
-                                        String topic = ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC_PREFIX);
+                                        String topic = ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC);
                                         return new ProducerRecord<byte[], byte[]>(topic, s.getBytes(StandardCharsets.UTF_8));
                                     }
                                 })

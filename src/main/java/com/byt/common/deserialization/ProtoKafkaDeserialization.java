@@ -64,7 +64,7 @@ public class ProtoKafkaDeserialization implements KafkaDeserializationSchema<Lis
                     }
                     kafkaInfos.add(tagKafkaInfo);
                 } else {
-                    // TODO 保留两位小数
+                    // 保留4位小数
                     BigDecimal v = new BigDecimal(kafkaInfoProtos.getValue()).setScale(4, BigDecimal.ROUND_HALF_UP);
                     tagKafkaInfo.setValue(v);
                     kafkaInfos.add(tagKafkaInfo);

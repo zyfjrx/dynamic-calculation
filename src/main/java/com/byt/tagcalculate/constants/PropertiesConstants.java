@@ -10,40 +10,11 @@ public class PropertiesConstants {
 
     public static final String KAFKA_SERVER = "kafka.server";
     public static final String KAFKA_ODS_TOPIC = "kafka.ods.topic";
-    public static final String KAFKA_DWD_TOPIC_PREFIX = "kafka.dwd.topic.prefix";
     public static final String KAFKA_DWS_TOPIC = "kafka.dws.topic";
     public static final String KAFKA_DWD_TOPIC = "kafka.dwd.topic";
-    public static final String KAFKA_GROUP_ID = "kafka.group.id";
-    public static final String DEFAULT_KAFKA_GROUP_ID = "randhn";
-
-
     public static final String DWS_TODAY_TABLE = "dws.today.table";
     public static final String DWS_RESULT_TABLE = "dws.result.table";
     public static final String DWS_SECOND_TABLE = "dws.second.table";
-    //public static final String GREENPLUM_TODAY_TABLE_ASYNC = "greenplum.today.table.async";
-    //public static final String GREENPLUM_RESULT_TABLE_ASYNC = "greenplum.result.table.async";
-    //public static final String GREENPLUM_SECOND_TABLE_ASYNC = "greenplum.second.table.async";
-
-
-    public static final String STREAM_PARALLELISM = "stream.parallelism";
-    public static final String STREAM_CALCULATE_PARALLELISM = "stream.calculate.parallelism";
-    public static final String STREAM_SINK_PG_PARALLELISM = "stream.sink.pg.parallelism";
-    public static final String STREAM_SINK_DWS_PARALLELISM = "stream.sink.dws.parallelism";
-    public static final String STREAM_SINK_DWD_PARALLELISM = "stream.sink.dwd.parallelism";
-    public static final String STREAM_SOURCE_ODS_KAFKA_PARALLELISM = "stream.source.ods.kafka.parallelism";
-    public static final String STREAM_SOURCE_DWD_KAFKA_PARALLELISM = "stream.source.dwd.kafka.parallelism";
-    public static final String STREAM_CHECKPOINT_ENABLE = "stream.checkpoint.enable";
-    public static final String STREAM_CHECKPOINTING_MODE = "stream.checkpointing.mode";
-    public static final String STREAM_CHECKPOINT_DIR = "stream.checkpoint.dir";
-    public static final String STREAM_CHECKPOINT_INTERVAL = "stream.checkpoint.interval";
-    public static final String STREAM_CHECKPOINT_MIN_PAUSE_BETWEEN_CHECKPOINTS = "stream.checkpoint.min.pause.between.checkpoints";
-    public static final String STREAM_CHECKPOINT_TIMEOUT = "stream.checkpoint.timeout";
-    public static final String STREAM_TIME_WINDOW = "stream.time.window";
-
-
-    public static final String COMMON_PROPERTIES = "/common.properties";
-    public static final String FLINK_DEV_PROPERTIES = "/application.properties";
-    public static final String RUNTIME_ENVIRONMENT = "runtime_environment";
 
     // mysql
     public static final String MYSQL_HOST = "mysql.host";

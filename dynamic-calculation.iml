@@ -26,6 +26,8 @@
     <orderEntry type="library" name="Maven: org.apache.flink:force-shading:1.13.5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-streaming-java-byt:1.13.5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-cep-byt:1.13.5" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.flink:flink-statebackend-rocksdb_2.12:1.13.5" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.ververica:frocksdbjni:5.17.2-ververica-2.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.flink:flink-clients_2.12:1.13.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.flink:flink-runtime_2.12:1.13.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.flink:flink-queryable-state-client-java:1.13.5" level="project" />

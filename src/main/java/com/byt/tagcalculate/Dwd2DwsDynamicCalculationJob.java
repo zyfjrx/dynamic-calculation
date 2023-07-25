@@ -13,6 +13,8 @@ import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.sink.DbResultBatchSink;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -39,6 +41,8 @@ public class Dwd2DwsDynamicCalculationJob {
         // 获取执行环境和相关参数
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
+        // RocksDB状态后端
+        env.setStateBackend(new EmbeddedRocksDBStateBackend());
 
         // 定义测输出流标签
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = SideOutPutTagUtil.getSideOutPutTags();
@@ -392,7 +396,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 .getSideOutput(sideOutPutTags.get(PropertiesConstants.RSI))
                 .keyBy(r -> r.getBytName())
                 .process(new RsiProcessFunc(dwdOutPutTag))
-                .name("EMA");
+                .name("RSI");
 
 
 //  ===============================================  获取对应算子计算完毕   ================================================

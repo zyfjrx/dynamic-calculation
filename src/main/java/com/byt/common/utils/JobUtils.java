@@ -16,7 +16,7 @@ public class JobUtils {
         String[] jobArr = jobs.split(",");
         HashSet<String> hashSet = new HashSet<>();
         for (String s : jobArr) {
-            hashSet.add(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC_PREFIX) + lineId+"_"+ s);
+            hashSet.add(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC) + lineId+"_"+ s);
         }
         System.out.println(hashSet);
         return new ArrayList<>(hashSet);
