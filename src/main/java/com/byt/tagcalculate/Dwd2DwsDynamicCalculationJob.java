@@ -475,7 +475,13 @@ public class Dwd2DwsDynamicCalculationJob {
                 .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new BatchOutAllWindowFunction())
                 .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_TODAY_TABLE)))
-                .name("dws_tag_minute");
+                .name("dws_tag_minute_today");
+
+        minuteResult
+                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
+                .process(new BatchOutAllWindowFunction())
+                .addSink(new DbResultBatchSink(ConfigManager.getProperty(PropertiesConstants.DWS_RESULT_TABLE)))
+                .name("dws_tag_minute_result");
 
 
         // send to mysql 秒级别级别数据
