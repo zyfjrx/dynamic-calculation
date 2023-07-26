@@ -13,8 +13,6 @@ import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.sink.DbResultBatchSink;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
-import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -42,7 +40,7 @@ public class Dwd2DwsDynamicCalculationJob {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
         // RocksDB状态后端
-        env.setStateBackend(new EmbeddedRocksDBStateBackend());
+        //env.setStateBackend(new EmbeddedRocksDBStateBackend());
 
         // 定义测输出流标签
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = SideOutPutTagUtil.getSideOutPutTags();
@@ -60,9 +58,9 @@ public class Dwd2DwsDynamicCalculationJob {
 
         SingleOutputStreamOperator<TagKafkaInfo> kafkaSource = env
                 // 2.1 添加数据源
-                .addSource(MyKafkaUtil.getKafkaPojoConsumerWM(
+                .addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         ConfigManager.getProperty("kafka.dwd.topic"),
-                        "test_" + System.currentTimeMillis())
+                        "test1_" + System.currentTimeMillis())
                 )
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))

@@ -34,7 +34,7 @@ public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, 
     public void open(Configuration parameters) throws Exception {
         mapState = getRuntimeContext().getMapState(
                 new MapStateDescriptor<String, Queue<TagKafkaInfo>>(
-                        "map",
+                        "lastMap",
                         Types.STRING,
                         TypeInformation.of(new TypeHint<Queue<TagKafkaInfo>>() {
                         })
