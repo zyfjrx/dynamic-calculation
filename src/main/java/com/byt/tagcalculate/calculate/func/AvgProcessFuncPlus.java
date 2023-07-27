@@ -5,8 +5,6 @@ import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.state.AggregatingState;
 import org.apache.flink.api.common.state.AggregatingStateDescriptor;
-import org.apache.flink.api.common.state.ValueState;
-import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -28,8 +26,7 @@ public class AvgProcessFuncPlus extends ProcessWindowFunction<TagKafkaInfo, TagK
     private SimpleDateFormat sdf;
     private OutputTag<TagKafkaInfo> dwdOutPutTag;
     private AggregatingState<TagKafkaInfo, TagKafkaInfo> aggregatingState;
-    private ValueState<BigDecimal> sumState;
-    private ValueState<BigDecimal> numState;
+
 
     public AvgProcessFuncPlus(OutputTag<TagKafkaInfo> dwdOutPutTag) {
         this.dwdOutPutTag = dwdOutPutTag;
@@ -38,19 +35,6 @@ public class AvgProcessFuncPlus extends ProcessWindowFunction<TagKafkaInfo, TagK
     @Override
     public void open(Configuration parameters) throws Exception {
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        sumState = getRuntimeContext().getState(
-                new ValueStateDescriptor<BigDecimal>(
-                        "sum-state",
-                        Types.BIG_DEC
-                )
-        );
-        numState = getRuntimeContext().getState(
-                new ValueStateDescriptor<BigDecimal>(
-                        "num-state",
-                        Types.BIG_DEC
-                )
-        );
-
         aggregatingState = getRuntimeContext()
                 .getAggregatingState(
                         new AggregatingStateDescriptor<TagKafkaInfo, Tuple3<TagKafkaInfo, BigDecimal, BigDecimal>, TagKafkaInfo>(
@@ -107,7 +91,5 @@ public class AvgProcessFuncPlus extends ProcessWindowFunction<TagKafkaInfo, TagK
         tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo, context, out, dwdOutPutTag);
         aggregatingState.clear();
-        sumState.clear();
-        numState.clear();
     }
 }
