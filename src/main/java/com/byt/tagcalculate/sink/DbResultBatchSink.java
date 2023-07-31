@@ -11,7 +11,11 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
-
+/**
+ * @title: 实时同步配置
+ * @author: zhangyifan
+ * @date: 2023/7/28 13:37
+ */
 @Slf4j
 public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
     private transient SimpleDateFormat sdf;
