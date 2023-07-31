@@ -51,16 +51,18 @@ public class DejumpProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo
     public void processElement(TagKafkaInfo tagKafkaInfo, KeyedProcessFunction<String, TagKafkaInfo, TagKafkaInfo>.Context ctx, Collector<TagKafkaInfo> out) throws Exception {
         BigDecimal upperInt = new BigDecimal(tagKafkaInfo.getUpperInt());
         BigDecimal lowerInt = new BigDecimal(tagKafkaInfo.getLowerInt());
+        System.out.println(lowerInt);
         if (params.value() == null) {
             params.update(Tuple2.of(upperInt, lowerInt));
-        } else {
-            if (params.value().f0 != upperInt) {
-                params.value().setField(upperInt, 0);
-            } else if (params.value().f1 != lowerInt) {
-                params.value().setField(lowerInt, 1);
-            }
+        }
+        if (!(upperInt.compareTo(params.value().f0) == 0)) {
+            params.value().setField(upperInt, 0);
+            lastValue.clear();
+        } else if (!(lowerInt.compareTo(params.value().f1) == 0)) {
+            params.value().setField(lowerInt, 1);
             lastValue.clear();
         }
+
         if (lastValue.value() != null) {
             BigDecimal jumpValue = tagKafkaInfo.getValue().subtract(lastValue.value());
             if (jumpValue.compareTo(params.value().f1) == -1 || jumpValue.compareTo(params.value().f0) == 1) {
