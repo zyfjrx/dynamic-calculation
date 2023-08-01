@@ -64,6 +64,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 )
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
+                                .withIdleness(Duration.ofSeconds(5L))
                                 .withTimestampAssigner(new SerializableTimestampAssigner<TagKafkaInfo>() {
                                     @Override
                                     public long extractTimestamp(TagKafkaInfo tagKafkaInfo, long l) {
