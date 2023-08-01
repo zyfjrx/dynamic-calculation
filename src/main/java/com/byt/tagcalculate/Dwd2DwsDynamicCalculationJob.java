@@ -471,6 +471,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 .name("中间算子回流");
 
         // send to mysql 分钟级别数据
+
         minuteResult
                 .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new BatchOutAllWindowFunction())
