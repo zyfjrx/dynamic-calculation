@@ -28,12 +28,13 @@ public class MyKafkaUtil {
     private static String defaultTopic = "DWD_DEFAULT_TOPIC";
     private static Properties properties = new Properties();
 
+
     static {
         properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, ConfigManager.getProperty(PropertiesConstants.KAFKA_SERVER));
+        //会开启一个后台线程每隔5s检测一下Kafka的分区情况,实现动态分区检测
+//        properties.setProperty("flink.partition-discovery.interval-millis", "5000");
 
     }
-
-
 
 
     /**
@@ -52,7 +53,6 @@ public class MyKafkaUtil {
         );
         return kafkaConsumer;
     }
-
 
 
     /**
