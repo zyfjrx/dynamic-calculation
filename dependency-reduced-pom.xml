@@ -128,6 +128,12 @@
       <version>1.18.12</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.doris</groupId>
+      <artifactId>flink-doris-connector-1.13_2.12</artifactId>
+      <version>1.0.3</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <properties>
     <slf4j.version>1.7.15</slf4j.version>

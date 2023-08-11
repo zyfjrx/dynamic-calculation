@@ -50,7 +50,7 @@ public class Ods2DwdJob {
                 .addSource(
                         MyKafkaUtil
                                 .getKafkaListConsumer(ConfigManager.getListProperty("kafka.ods.topic"),
-                                        "test1_" + System.currentTimeMillis()
+                                        "test1_20230808"
                                 ));
         // 连接两个流 connect()
         SingleOutputStreamOperator<String> resultDS = kafkaDS
