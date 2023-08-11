@@ -60,7 +60,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 // 2.1 添加数据源
                 .addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         ConfigManager.getProperty("kafka.dwd.topic"),
-                        "test1_" + "20230804")
+                        "test2_20230808")
                 )
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
