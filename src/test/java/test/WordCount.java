@@ -1,19 +1,15 @@
 package test;
 
 
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.api.java.utils.ParameterTool;
 
 public class WordCount {
     public static void main(String[] args) throws Exception {
-        //获取执行环境
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(1);
+        ParameterTool defaultPropertiesFile = ParameterTool.fromPropertiesFile(
+                WordCount.class.getClassLoader().getResourceAsStream("application.properties")
+        );
 
-        env
-                .socketTextStream("localhost", 9999)
-                .print();
+        System.out.println(defaultPropertiesFile.get("mysql.host"));
 
-
-        env.execute();
     }
 }
