@@ -3,18 +3,20 @@ package com.byt.tagcalculate.main;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.byt.common.cdc.FlinkCDC;
-import com.byt.tagcalculate.constants.PropertiesConstants;
+import com.byt.common.utils.EnvironmentUtils;
+import com.byt.common.utils.MyKafkaUtil;
 import com.byt.tagcalculate.func.AsyncTagsPost;
 import com.byt.tagcalculate.func.Descriptors;
 import com.byt.tagcalculate.func.PostJsonFunc;
 import com.byt.tagcalculate.func.Value2PNameAndValue;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import com.byt.common.utils.ConfigManager;
-import com.byt.common.utils.MyKafkaUtil;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.streaming.api.datastream.*;
+import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
+import org.apache.flink.streaming.api.datastream.BroadcastStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.concurrent.TimeUnit;
@@ -28,7 +30,7 @@ public class Dws2PostJob {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-
+        ParameterTool parameterTool = EnvironmentUtils.createParameterTool();
         // 读取配置流数据
         SingleOutputStreamOperator<JSONObject> cdcPost = env
                 .fromSource(FlinkCDC.getMysqlSourceWithPost(), WatermarkStrategy.noWatermarks(),"mysql")
@@ -40,7 +42,11 @@ public class Dws2PostJob {
 
         // 第一次广播，为数据划分属于的postName
         SingleOutputStreamOperator<Tuple2<String, TagKafkaInfo>> broadcast1 = env
-                .addSource(MyKafkaUtil.getKafkaPojoConsumer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC), "test"))
+                .addSource(MyKafkaUtil.getKafkaPojoConsumer(
+                        parameterTool.get("kafka.dws.topic"),
+                        "test2_20230808",
+                        parameterTool.get("kafka.server")
+                        ))
                 .connect(broadcastDim)
                 .process(new Value2PNameAndValue());
         broadcast1.print("1>>>>>>>>");
@@ -58,7 +64,7 @@ public class Dws2PostJob {
             public String map(Tuple2<String, String> tuple2) throws Exception {
                 return tuple2.f1;
             }
-        }).addSink(MyKafkaUtil.getKafkaProducer("post_test_data"));
+        }).addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dws.topic"),parameterTool.get("kafka.server")));
         AsyncDataStream.orderedWait(postDS,new AsyncTagsPost(),10000, TimeUnit.MILLISECONDS,100);
         env.execute("post_arithmetic_job");
     }

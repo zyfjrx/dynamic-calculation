@@ -1,6 +1,7 @@
 package com.byt.tagcalculate;
 
 import com.byt.common.utils.ConfigManager;
+import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
 import com.byt.common.utils.SideOutPutTagUtil;
 import com.byt.tagcalculate.calculate.func.*;
@@ -13,6 +14,7 @@ import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.sink.DbResultBatchSink;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
 import org.apache.flink.connector.jdbc.JdbcSink;
@@ -46,7 +48,7 @@ public class Dwd2DwsDynamicCalculationJobMySQL {
         // 获取执行环境和相关参数
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-
+        ParameterTool parameterTool = EnvironmentUtils.createParameterTool();
         // 定义测输出流标签
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = SideOutPutTagUtil.getSideOutPutTags();
         Set<String> strings = sideOutPutTags.keySet();
@@ -64,8 +66,9 @@ public class Dwd2DwsDynamicCalculationJobMySQL {
         SingleOutputStreamOperator<TagKafkaInfo> kafkaSource = env
                 // 2.1 添加数据源
                 .addSource(MyKafkaUtil.getKafkaPojoConsumer(
-                        ConfigManager.getProperty("kafka.dwd.topic"),
-                        "test_" + System.currentTimeMillis())
+                        parameterTool.get("kafka.dwd.topic"),
+                        "test2_20230808",
+                        parameterTool.get("kafka.server"))
                 )
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))
@@ -397,7 +400,7 @@ public class Dwd2DwsDynamicCalculationJobMySQL {
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
         //dwdResult.print("dwd>>>");
-        dwdResult.addSink(MyKafkaUtil.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWD_TOPIC)))
+        dwdResult.addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dwd.topic"),parameterTool.get("kafka.server")))
                 .name("dwd-sink");
 // ======================================================= DWD =========================================================
 
@@ -417,7 +420,7 @@ public class Dwd2DwsDynamicCalculationJobMySQL {
         // send to kafka
         dwsResult
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
-                .addSink(MyKafkaUtil.getKafkaProducer(ConfigManager.getProperty(PropertiesConstants.KAFKA_DWS_TOPIC)))
+                .addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dws.topic"),parameterTool.get("kafka.server")))
                 .name("dws-sink");
 
         dwsResult.print("dws<<<");

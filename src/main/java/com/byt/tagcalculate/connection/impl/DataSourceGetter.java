@@ -21,4 +21,15 @@ public class DataSourceGetter {
         druidDataSource.setDefaultAutoCommit(false);
         return druidDataSource;
     }
+
+    public static DruidDataSource getMysqlDataSource(String host,Integer port,String username,String password,String database) {
+        String url = "jdbc:mysql://"+host+":"+port+"/"+database+"?autoReconnect=true&useSSL=false&characterEncoding=utf-8&serverTimezone=GMT%2B8";
+        System.out.println(url);
+        DruidDataSource druidDataSource = new DruidDataSource();
+        druidDataSource.setUrl(url);
+        druidDataSource.setUsername(username);
+        druidDataSource.setPassword(password);
+        druidDataSource.setDefaultAutoCommit(false);
+        return druidDataSource;
+    }
 }

@@ -1,16 +1,19 @@
 package com.byt.tagcalculate.sink;
 
-import com.byt.tagcalculate.connection.SinkConnection;
-import com.byt.tagcalculate.connection.impl.DbConnection;
+import com.byt.tagcalculate.connection.impl.DataSourceGetter;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
+
 /**
  * @title: 实时同步配置
  * @author: zhangyifan
@@ -21,7 +24,8 @@ public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
     private transient SimpleDateFormat sdf;
     PreparedStatement ps;
     private String tableName;
-    private SinkConnection sinkConnection;
+    private Connection connection;
+    private ParameterTool parameterTool;
 
     public DbResultBatchSink(String tableName) {
         this.tableName = tableName;
@@ -29,19 +33,23 @@ public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
 
     @Override
     public void open(Configuration parameters) throws Exception {
-        if(sinkConnection == null) {
-            sinkConnection = new DbConnection();
-            log.info("DB Connection is open");
-        }
-
+        parameterTool = (ParameterTool)
+                getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+        connection = DataSourceGetter.getMysqlDataSource(
+                parameterTool.get("mysql.host"),
+                parameterTool.getInt("mysql.port"),
+                parameterTool.get("mysql.username"),
+                parameterTool.get("mysql.password"),
+                parameterTool.get("mysql.database")
+        ).getConnection();
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         super.open(parameters);
     }
 
     @Override
     public void close() throws Exception {
-        if(sinkConnection != null) {
-            sinkConnection.close();
+        if (connection != null) {
+            connection.close();
             log.info("DB Connection is closed");
         }
         super.close();
@@ -51,9 +59,8 @@ public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
     public void invoke(List<TagKafkaInfo> value, Context context) throws Exception {
 
 
-        Connection con = sinkConnection.getConnection();
         String sql = "insert into " + tableName + "(byt_name, tag_topic, value, calculate_time, calculate_type,calculate_params, job_name, line_id) values(?, ?, ?, ?, ?, ?, ?, ?);";
-        PreparedStatement ps = con.prepareStatement(sql);
+        PreparedStatement ps = connection.prepareStatement(sql);
 
         for (TagKafkaInfo tag : value) {
             ps.setString(1, tag.getBytName());
@@ -68,15 +75,14 @@ public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
         }
 
 
-
         try {
             int[] count = ps.executeBatch();
             System.out.println("inserted " + Arrays.stream(count).count() + " records");
-            con.commit();
+            connection.commit();
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
-            con.rollback();
+            connection.rollback();
             throw new RuntimeException(e);
         }
     }

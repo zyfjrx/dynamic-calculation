@@ -13,7 +13,10 @@ import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
+import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,12 +32,12 @@ public class MyKafkaUtil {
     private static Properties properties = new Properties();
 
 
-    static {
-        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, ConfigManager.getProperty(PropertiesConstants.KAFKA_SERVER));
-        //会开启一个后台线程每隔5s检测一下Kafka的分区情况,实现动态分区检测
-//        properties.setProperty("flink.partition-discovery.interval-millis", "5000");
-
-    }
+//    static {
+//        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, ConfigManager.getProperty(PropertiesConstants.KAFKA_SERVER));
+//        //会开启一个后台线程每隔5s检测一下Kafka的分区情况,实现动态分区检测
+////        properties.setProperty("flink.partition-discovery.interval-millis", "5000");
+//
+//    }
 
 
     /**
@@ -44,8 +47,9 @@ public class MyKafkaUtil {
      * @param groupId
      * @return
      */
-    public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumer(List<String> topic, String groupId) {
+    public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumer(List<String> topic, String groupId,String server) {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
         FlinkKafkaConsumer<List<TagKafkaInfo>> kafkaConsumer = new FlinkKafkaConsumer<List<TagKafkaInfo>>(
                 topic,
                 new ProtoKafkaDeserialization(),
@@ -62,8 +66,9 @@ public class MyKafkaUtil {
      * @param groupId
      * @return
      */
-    public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumer(String topic, String groupId) {
+    public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumer(String topic, String groupId,String server) {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
                 topic,
                 new TagInfoDeserializationSchema(),
@@ -105,11 +110,18 @@ public class MyKafkaUtil {
         );
     }
 
-    public static FlinkKafkaProducer<String> getKafkaProducer(String topic) {
+    public static FlinkKafkaProducer<String> getKafkaProducer(String topic,String server) {
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,server);
         return new FlinkKafkaProducer<String>(
-                topic,
-                new SimpleStringSchema(),
-                properties
+                defaultTopic,
+                new KafkaSerializationSchema<String>() {
+                    @Override
+                    public ProducerRecord<byte[], byte[]> serialize(String element, @Nullable Long timestamp) {
+                        return new ProducerRecord<byte[], byte[]>(topic,element.getBytes(StandardCharsets.UTF_8));
+                    }
+                },
+                properties,
+                FlinkKafkaProducer.Semantic.EXACTLY_ONCE
         );
     }
 
