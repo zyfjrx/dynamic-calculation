@@ -3,8 +3,8 @@ package com.byt.tagcalculate.main;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidPooledConnection;
-import com.byt.tagcalculate.connection.impl.DataSourceGetter;
 import com.byt.common.utils.ConfigManager;
+import com.byt.tagcalculate.connection.impl.DataSourceGetter;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -53,5 +53,8 @@ public class DailyDeleteSecond {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        System.out.println(ConfigManager.getProperty("mysql.host"));
+        System.out.println(ConfigManager.getProperty("mysql.port"));
+        System.out.println(ConfigManager.getProperty("mysql.username"));
     }
 }

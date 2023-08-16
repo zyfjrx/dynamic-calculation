@@ -2,12 +2,15 @@ package com.byt.tagcalculate.func;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import com.byt.tagcalculate.pojo.TagProperties;
 import com.byt.common.utils.BytTagUtil;
 import com.byt.common.utils.FormulaTag;
 import com.byt.common.utils.QlexpressUtil;
-import org.apache.flink.api.common.state.*;
+import com.byt.tagcalculate.pojo.TagKafkaInfo;
+import com.byt.tagcalculate.pojo.TagProperties;
+import org.apache.flink.api.common.state.BroadcastState;
+import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
@@ -25,6 +28,7 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
     private Map<String, TagProperties> bytInfoCache;
     private Set<String> hasTags;
     private Set<String> keys;
+    private ParameterTool parameterTool;
 
 
     public BroadcastProcessFunc(MapStateDescriptor<String, TagProperties> mapStateDescriptor) {
@@ -37,6 +41,8 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         bytInfoCache = new HashMap<>(1024);
         hasTags = new HashSet<>();
         keys = new HashSet<>();
+        parameterTool = (ParameterTool)
+                getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
     }
 
     @Override
@@ -49,7 +55,7 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         }
 
         // 调用工具类，处理补充信息
-        List<TagKafkaInfo> bytTagData = BytTagUtil.bytTagData(value, hasTags, bytInfoCache);
+        List<TagKafkaInfo> bytTagData = BytTagUtil.bytTagData(value, hasTags, bytInfoCache,parameterTool);
         // 主流输出数据
         out.collect(bytTagData);
     }
@@ -68,7 +74,7 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
         if (!op.equals("d") && after.status == 1) {
             keys.add(key);
-            if (after.tag_name.contains(FormulaTag.START)) {
+            if (after.tag_name.contains(parameterTool.get("formula.tag.start"))) {
                 Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name.trim());
                 hasTags.addAll(tagSet);
             } else {

@@ -1,19 +1,42 @@
 package test;
 
 
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WordCount {
     public static void main(String[] args) throws Exception {
-        //获取执行环境
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(1);
-
-        env
-                .socketTextStream("localhost", 9999)
-                .print();
+        HashMap<String,String> defaultMap = new HashMap<>();
+        defaultMap.put("username","zs");
+        defaultMap.put("port","3306");
+        Map<String, String> data = Collections.unmodifiableMap(defaultMap);
 
 
-        env.execute();
+        HashMap<String,String> exMap = new HashMap<>();
+        defaultMap.put("port","33060");
+        defaultMap.put("host","hadoop");
+        Map<String, String> otherData = Collections.unmodifiableMap(exMap);
+
+        Map<String, String> resultData = new HashMap<>(data.size() + otherData.size());
+        resultData.putAll(data);
+        resultData.putAll(otherData);
+
+        Set<Object> unP = Collections.newSetFromMap(new ConcurrentHashMap<>(resultData.size()));
+        unP.addAll(resultData.keySet());
+        System.out.println(resultData);
+        System.out.println(unP);
+
+        HashSet<String> left = new HashSet<>(data.keySet());
+        left.removeAll(unP);
+        System.out.println(left);
+
+        HashSet<String> right = new HashSet<>(otherData.keySet());
+        right.removeAll(unP);
+        System.out.println(right);
+
+        unP.removeAll(left);
+        unP.removeAll(right);
+        System.out.println(resultData);
+
     }
 }

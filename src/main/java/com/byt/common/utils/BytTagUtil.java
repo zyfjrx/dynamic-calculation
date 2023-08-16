@@ -2,6 +2,7 @@ package com.byt.common.utils;
 
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.cep.functions.PatternProcessFunction;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
@@ -59,7 +60,7 @@ public class BytTagUtil {
      */
     public static List<TagKafkaInfo> bytTagData(List<TagKafkaInfo> value,
                                                 Set<String> hasTags,
-                                                Map<String, TagProperties> bytInfoCache) throws Exception {
+                                                Map<String, TagProperties> bytInfoCache, ParameterTool parameterTool) throws Exception {
         // 获取到转换为Map结构的标签信息
         Map<String, TagKafkaInfo> tagInfoMap = tagInfoMap(value, hasTags);
         // 创建list 保存处理后的数据
@@ -84,7 +85,7 @@ public class BytTagUtil {
                 continue;
             }
 
-            if (tagName.contains(FormulaTag.START)) {
+            if (tagName.contains(parameterTool.get("formula.tag.start"))) {
                 Set<String> tagSet = QlexpressUtil.getTagSet(tagName);
                 try {
                     Object r = QlexpressUtil.computeExpress(tagInfoMap, tagName);
@@ -125,7 +126,7 @@ public class BytTagUtil {
             bytTag.setCalculateParam(param);
             bytTag.setTaskName(entry.getValue().task_name);
             bytTag.setStatus(entry.getValue().status);
-            if (tagInfoMap.get(tagName) != null || tagName.contains(FormulaTag.START)) {
+            if (tagInfoMap.get(tagName) != null || tagName.contains(parameterTool.get("formula.tag.start"))) {
                 bytTagData.add(parseParams(bytTag, calculateType, param));
             }
         }

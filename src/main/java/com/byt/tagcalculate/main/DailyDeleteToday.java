@@ -54,5 +54,9 @@ public class DailyDeleteToday {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        System.out.println(ConfigManager.getProperty("mysql.host"));
+        System.out.println(ConfigManager.getProperty("mysql.port"));
+        System.out.println(ConfigManager.getProperty("mysql.username"));
     }
 }
