@@ -112,6 +112,7 @@ public class MyKafkaUtil {
 
     public static FlinkKafkaProducer<String> getKafkaProducer(String topic,String server) {
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,server);
+        properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 15 * 60 * 1000L + "");
         return new FlinkKafkaProducer<String>(
                 defaultTopic,
                 new KafkaSerializationSchema<String>() {

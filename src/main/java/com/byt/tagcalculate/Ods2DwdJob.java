@@ -40,6 +40,7 @@ public class Ods2DwdJob {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
         ParameterTool parameterTool = EnvironmentUtils.createParameterTool();
+        env.getConfig().setGlobalJobParameters(parameterTool);
         //env.setStateBackend(new EmbeddedRocksDBStateBackend());
         // TODO 1.定义广播状态描述器、读取配置流转换为广播流
         MapStateDescriptor<String, TagProperties> mapStateDescriptor = new MapStateDescriptor<>(
