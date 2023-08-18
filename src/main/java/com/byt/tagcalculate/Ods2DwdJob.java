@@ -2,14 +2,11 @@ package com.byt.tagcalculate;
 
 import com.alibaba.fastjson.JSONObject;
 import com.byt.common.cdc.FlinkCDC;
-import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
-import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.tagcalculate.func.BroadcastProcessFunc;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
-import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.state.MapStateDescriptor;
@@ -19,12 +16,8 @@ import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.flink.util.Collector;
-import org.apache.kafka.clients.producer.ProducerRecord;
 
-import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,6 +34,25 @@ public class Ods2DwdJob {
         env.setParallelism(1);
         ParameterTool parameterTool = EnvironmentUtils.createParameterTool();
         env.getConfig().setGlobalJobParameters(parameterTool);
+
+/*        env.enableCheckpointing(6000L, CheckpointingMode.EXACTLY_ONCE);
+        //2.2 设置检查点超时时间
+        env.getCheckpointConfig().setCheckpointTimeout(60 * 1000L);
+        //2.3 设置取消job后，检查点是否保留
+        env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+        //2.4 设置重启策略
+        //固定次数重启
+        env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 3000L));
+        //失败率重启
+        // env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.milliseconds(3000), Time.days(30)));
+        //2.5 设置检查点间隔时间
+        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(3000L);
+        //2.6 设置状态后段
+        env.setStateBackend(new FsStateBackend("hdfs://hadoop202:8020/flink/dynamic/dwd"));
+        //2.7 设置操作hadoop用户
+        System.setProperty("HADOOP_USER_NAME", "root");*/
+
+
         //env.setStateBackend(new EmbeddedRocksDBStateBackend());
         // TODO 1.定义广播状态描述器、读取配置流转换为广播流
         MapStateDescriptor<String, TagProperties> mapStateDescriptor = new MapStateDescriptor<>(
@@ -65,6 +77,7 @@ public class Ods2DwdJob {
                                 .getKafkaListConsumer(Arrays.asList(parameterTool.get("kafka.ods.topic").split(",")),
                                         "test1_20230808", parameterTool.get("kafka.server")
                                 ));
+        //kafkaDS.print("kafka>>");
         // 连接两个流 connect()
         SingleOutputStreamOperator<String> resultDS = kafkaDS
                 .connect(mysqlDS)
@@ -83,7 +96,7 @@ public class Ods2DwdJob {
                 });
 
         // sink kafka
-        resultDS.addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dwd.topic"),parameterTool.get("kafka.server")))
+        resultDS.addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dwd.topic"), parameterTool.get("kafka.server")))
                 .name("sink to kafka");
 
         resultDS.print();

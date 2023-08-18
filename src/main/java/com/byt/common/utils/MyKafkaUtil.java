@@ -1,7 +1,7 @@
 package com.byt.common.utils;
 
-import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.common.deserialization.ProtoKafkaDeserialization;
+import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.common.deserialization.TagInfoDeserializationSchema;
 import com.byt.common.deserialization.TopicDataDeserialization;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
@@ -49,6 +49,9 @@ public class MyKafkaUtil {
      */
     public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumer(List<String> topic, String groupId,String server) {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+//        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+//        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+//        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "6000");
         properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
         FlinkKafkaConsumer<List<TagKafkaInfo>> kafkaConsumer = new FlinkKafkaConsumer<List<TagKafkaInfo>>(
                 topic,
@@ -87,6 +90,7 @@ public class MyKafkaUtil {
      */
     public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumerWithTopics(List<String> topics, String groupId) {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
                 topics,
                 new TagInfoDeserializationSchema(),
@@ -103,6 +107,7 @@ public class MyKafkaUtil {
      * @return
      */
     public static FlinkKafkaConsumer<String> getKafkaConsumer(String topic, String groupId) {
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return new FlinkKafkaConsumer<String>(
                 topic,
                 new SimpleStringSchema(),

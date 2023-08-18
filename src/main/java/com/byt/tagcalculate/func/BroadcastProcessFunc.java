@@ -7,9 +7,8 @@ import com.byt.common.utils.FormulaTag;
 import com.byt.common.utils.QlexpressUtil;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
-import org.apache.flink.api.common.state.BroadcastState;
-import org.apache.flink.api.common.state.MapStateDescriptor;
-import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
+import org.apache.flink.api.common.state.*;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
@@ -53,6 +52,11 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
             TagProperties tagProperties = broadcastState.get(key);
             bytInfoCache.put(key, tagProperties);
         }
+        // 主流数据先到等待配置3s
+        if (bytInfoCache.keySet().size() == 0){
+            System.out.println("wait~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            Thread.sleep(3000L);
+        }
 
         // 调用工具类，处理补充信息
         List<TagKafkaInfo> bytTagData = BytTagUtil.bytTagData(value, hasTags, bytInfoCache,parameterTool);
@@ -74,7 +78,7 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
         if (!op.equals("d") && after.status == 1) {
             keys.add(key);
-            if (after.tag_name.contains(parameterTool.get("formula.tag.start"))) {
+            if (after.tag_name.startsWith(parameterTool.get("formula.tag.start"))) {
                 Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name.trim());
                 hasTags.addAll(tagSet);
             } else {

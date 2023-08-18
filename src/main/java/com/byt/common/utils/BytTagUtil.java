@@ -85,7 +85,7 @@ public class BytTagUtil {
                 continue;
             }
 
-            if (tagName.contains(parameterTool.get("formula.tag.start"))) {
+            if (tagName.startsWith(parameterTool.get("formula.tag.start"))) {
                 Set<String> tagSet = QlexpressUtil.getTagSet(tagName);
                 try {
                     Object r = QlexpressUtil.computeExpress(tagInfoMap, tagName);
@@ -126,7 +126,7 @@ public class BytTagUtil {
             bytTag.setCalculateParam(param);
             bytTag.setTaskName(entry.getValue().task_name);
             bytTag.setStatus(entry.getValue().status);
-            if (tagInfoMap.get(tagName) != null || tagName.contains(parameterTool.get("formula.tag.start"))) {
+            if (tagInfoMap.get(tagName) != null || tagName.startsWith(parameterTool.get("formula.tag.start"))) {
                 bytTagData.add(parseParams(bytTag, calculateType, param));
             }
         }
