@@ -1,6 +1,5 @@
 package com.byt.tagcalculate;
 
-import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
 import com.byt.common.utils.SideOutPutTagUtil;
@@ -14,9 +13,13 @@ import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.sink.DbResultBatchSink;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.runtime.state.filesystem.FsStateBackend;
+import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.api.windowing.assigners.DynamicSlidingEventTimeWindows;
@@ -45,6 +48,24 @@ public class Dwd2DwsDynamicCalculationJob {
         env.getConfig().setGlobalJobParameters(parameterTool);
         // RocksDB状态后端
         //env.setStateBackend(new EmbeddedRocksDBStateBackend());
+        if (parameterTool.getBoolean("flink.checkpoint.is-enable")) {
+            env.enableCheckpointing(5 * 60 * 1000L, CheckpointingMode.EXACTLY_ONCE);
+            // 设置检查点超时时间
+            env.getCheckpointConfig().setCheckpointTimeout(12 * 60 * 1000L);
+            // 设置取消job后，检查点是否保留
+            env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+            // 设置重启策略
+            // 固定次数重启
+            env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 3000L));
+            // 失败率重启
+            // env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.milliseconds(3000), Time.days(30)));
+            // 设置检查点间隔时间
+            env.getCheckpointConfig().setMinPauseBetweenCheckpoints(6 * 60 * 1000L);
+            // 设置状态后段
+            env.setStateBackend(new FsStateBackend("hdfs://" + parameterTool.get("hdfs.node") + "/flink/dynamic/dws"));
+            // 设置操作hadoop用户
+            System.setProperty("HADOOP_USER_NAME", parameterTool.get("hdfs.user"));
+        }
 
         // 定义测输出流标签
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = SideOutPutTagUtil.getSideOutPutTags();

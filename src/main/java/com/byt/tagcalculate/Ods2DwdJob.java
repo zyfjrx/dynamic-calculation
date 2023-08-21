@@ -9,12 +9,16 @@ import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.runtime.state.filesystem.FsStateBackend;
+import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
 
@@ -35,22 +39,24 @@ public class Ods2DwdJob {
         ParameterTool parameterTool = EnvironmentUtils.createParameterTool();
         env.getConfig().setGlobalJobParameters(parameterTool);
 
-/*        env.enableCheckpointing(6000L, CheckpointingMode.EXACTLY_ONCE);
-        //2.2 设置检查点超时时间
-        env.getCheckpointConfig().setCheckpointTimeout(60 * 1000L);
-        //2.3 设置取消job后，检查点是否保留
-        env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
-        //2.4 设置重启策略
-        //固定次数重启
-        env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 3000L));
-        //失败率重启
-        // env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.milliseconds(3000), Time.days(30)));
-        //2.5 设置检查点间隔时间
-        env.getCheckpointConfig().setMinPauseBetweenCheckpoints(3000L);
-        //2.6 设置状态后段
-        env.setStateBackend(new FsStateBackend("hdfs://hadoop202:8020/flink/dynamic/dwd"));
-        //2.7 设置操作hadoop用户
-        System.setProperty("HADOOP_USER_NAME", "root");*/
+        if (parameterTool.getBoolean("flink.checkpoint.is-enable")) {
+            env.enableCheckpointing(5 * 60 * 1000L, CheckpointingMode.EXACTLY_ONCE);
+            // 设置检查点超时时间
+            env.getCheckpointConfig().setCheckpointTimeout(12 * 60 * 1000L);
+            // 设置取消job后，检查点是否保留
+            env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+            // 设置重启策略
+            // 固定次数重启
+            env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, 3000L));
+            // 失败率重启
+            // env.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.milliseconds(3000), Time.days(30)));
+            // 设置检查点间隔时间
+            env.getCheckpointConfig().setMinPauseBetweenCheckpoints(6 * 60 * 1000L);
+            // 设置状态后段
+            env.setStateBackend(new FsStateBackend("hdfs://" + parameterTool.get("hdfs.node") + "/flink/dynamic/dwd"));
+            // 设置操作hadoop用户
+            System.setProperty("HADOOP_USER_NAME", parameterTool.get("hdfs.user"));
+        }
 
 
         //env.setStateBackend(new EmbeddedRocksDBStateBackend());
