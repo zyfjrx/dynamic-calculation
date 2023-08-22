@@ -26,19 +26,6 @@ import java.util.Properties;
  */
 public class MyKafkaUtil {
 
-
-    private static String defaultTopic = "DWD_DEFAULT_TOPIC";
-    private static Properties properties = new Properties();
-
-
-//    static {
-//        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, ConfigManager.getProperty(PropertiesConstants.KAFKA_SERVER));
-//        //会开启一个后台线程每隔5s检测一下Kafka的分区情况,实现动态分区检测
-////        properties.setProperty("flink.partition-discovery.interval-millis", "5000");
-//
-//    }
-
-
     /**
      * kafka-消费者 事件时间
      *
@@ -47,7 +34,10 @@ public class MyKafkaUtil {
      * @return
      */
     public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumer(List<String> topic, String groupId,String server) {
+        Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        //会开启一个后台线程每隔5s检测一下Kafka的分区情况,实现动态分区检测
+       // properties.setProperty("flink.partition-discovery.interval-millis", "5000");
 //        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 //        properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
 //        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "6000");
@@ -69,6 +59,7 @@ public class MyKafkaUtil {
      * @return
      */
     public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumer(String topic, String groupId,String server) {
+        Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
@@ -88,6 +79,7 @@ public class MyKafkaUtil {
      * @return
      */
     public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumerWithTopics(List<String> topics, String groupId) {
+        Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
@@ -106,6 +98,7 @@ public class MyKafkaUtil {
      * @return
      */
     public static FlinkKafkaConsumer<String> getKafkaConsumer(String topic, String groupId) {
+        Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return new FlinkKafkaConsumer<String>(
                 topic,
@@ -115,6 +108,7 @@ public class MyKafkaUtil {
     }
 
     public static FlinkKafkaProducer<String> getKafkaProducer(String topic,String server) {
+        Properties properties = new Properties();
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,server);
         properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 15 * 60 * 1000L + "");
         return new FlinkKafkaProducer<String>(
@@ -137,6 +131,7 @@ public class MyKafkaUtil {
      * @return
      */
     public static FlinkKafkaProducer getProducerWithTopicData() {
+        Properties properties = new Properties();
         properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 15 * 60 * 1000L + "");
         return new FlinkKafkaProducer<TopicData>(
                 "DEFAULT_TOPIC",
@@ -149,6 +144,7 @@ public class MyKafkaUtil {
 
     //获取FlinkKafkaProducer对象
     public static <T> FlinkKafkaProducer<T> getKafkaSinkBySchema(KafkaSerializationSchema<T> kafkaSerializationSchema) {
+        Properties properties = new Properties();
         return new FlinkKafkaProducer<T>(
                 "DEFAULT_TOPIC",
                 kafkaSerializationSchema,
