@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
     private transient SimpleDateFormat sdf;
-    PreparedStatement ps;
+    private PreparedStatement ps;
     private String tableName;
     private Connection connection;
     private ParameterTool parameterTool;
