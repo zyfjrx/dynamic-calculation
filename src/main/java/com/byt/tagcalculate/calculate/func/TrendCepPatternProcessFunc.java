@@ -35,15 +35,15 @@ public class TrendCepPatternProcessFunc extends PatternProcessFunction<TagKafkaI
             List<TagKafkaInfo> tag = map.get("tag");
             second = tag.get(tag.size() - 1);
         }
-        TagKafkaInfo newTag = new TagKafkaInfo();
-        BeanUtils.copyProperties(newTag, second);
+//        TagKafkaInfo newTag = new TagKafkaInfo();
+//        BeanUtils.copyProperties(newTag, second);
         try {
             BigDecimal trendValue = second.getValue().divide(first.getValue(), 4, BigDecimal.ROUND_HALF_UP);
-            newTag.setValue(trendValue);
+            second.setValue(trendValue);
         } catch (Exception e) {
-            newTag.setValue(null);
+            second.setValue(null);
             e.printStackTrace();
         }
-        BytTagUtil.outputByKeyed(newTag, context, collector, dwdOutPutTag);
+        BytTagUtil.outputByKeyed(second, context, collector, dwdOutPutTag);
     }
 }

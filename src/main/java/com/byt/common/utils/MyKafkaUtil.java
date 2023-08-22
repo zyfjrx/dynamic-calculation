@@ -1,7 +1,6 @@
 package com.byt.common.utils;
 
 import com.byt.common.deserialization.ProtoKafkaDeserialization;
-import com.byt.tagcalculate.constants.PropertiesConstants;
 import com.byt.common.deserialization.TagInfoDeserializationSchema;
 import com.byt.common.deserialization.TopicDataDeserialization;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
@@ -119,7 +118,7 @@ public class MyKafkaUtil {
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,server);
         properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 15 * 60 * 1000L + "");
         return new FlinkKafkaProducer<String>(
-                defaultTopic,
+                "DEFAULT_TOPIC",
                 new KafkaSerializationSchema<String>() {
                     @Override
                     public ProducerRecord<byte[], byte[]> serialize(String element, @Nullable Long timestamp) {
@@ -140,7 +139,7 @@ public class MyKafkaUtil {
     public static FlinkKafkaProducer getProducerWithTopicData() {
         properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 15 * 60 * 1000L + "");
         return new FlinkKafkaProducer<TopicData>(
-                defaultTopic,
+                "DEFAULT_TOPIC",
                 new TopicDataDeserialization(),
                 properties,
                 FlinkKafkaProducer.Semantic.EXACTLY_ONCE
@@ -151,64 +150,11 @@ public class MyKafkaUtil {
     //获取FlinkKafkaProducer对象
     public static <T> FlinkKafkaProducer<T> getKafkaSinkBySchema(KafkaSerializationSchema<T> kafkaSerializationSchema) {
         return new FlinkKafkaProducer<T>(
-                defaultTopic,
+                "DEFAULT_TOPIC",
                 kafkaSerializationSchema,
                 properties,
                 FlinkKafkaProducer.Semantic.AT_LEAST_ONCE
         );
-    }
-
-
-    /**
-     * kafka-source DDL语句
-     *
-     * @param topic   数据源主题
-     * @param groupId 消费者组
-     * @return
-     */
-    public static String getKafkaDDL(String topic, String groupId) {
-        return "WITH (" +
-                "  'connector' = 'kafka'," +
-                "  'topic' = '" + topic + "'," +
-                "  'properties.bootstrap.servers' = '" + ConfigManager.getProperty(PropertiesConstants.KAFKA_SERVER) + "'," +
-                "  'properties.group.id' = '" + groupId + "'," +
-                "  'scan.startup.mode' = 'latest-offset'," +
-                "  'format' = 'json'" +
-                ")";
-    }
-    //latest-offset   earliest-offset
-
-
-    /**
-     * Kafka-Sink DDL 语句
-     *
-     * @param topic 输出到 Kafka 的目标主题
-     * @return 拼接好的 Kafka-Sink DDL 语句
-     */
-    public static String getKafkaSinkDDL(String topic) {
-        return " WITH ( " +
-                "  'connector' = 'kafka', " +
-                "  'topic' = '" + topic + "', " +
-                "  'properties.bootstrap.servers' = '" + PropertiesConstants.KAFKA_SERVER + "', " +
-                "  'format' = 'json' " +
-                ")";
-    }
-
-    /**
-     * Upsertkafka-Sink DDL 语句
-     *
-     * @param topic 输出到 Kafka 的目标主题
-     * @return 拼接好的 Kafka-Sink DDL 语句
-     */
-    public static String getUpsertKafkaDDL(String topic) {
-
-        return "WITH ( " +
-                "  'connector' = 'upsert-kafka', " +
-                "  'topic' = '" + topic + "', " +
-                "  'properties.bootstrap.servers' = '" + PropertiesConstants.KAFKA_SERVER + "', " +
-                "  'key.format' = 'json', " +
-                "  'value.format' = 'json' " +
-                ")";
     }
 
 }

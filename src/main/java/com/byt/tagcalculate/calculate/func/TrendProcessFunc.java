@@ -56,16 +56,16 @@ public class TrendProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo,
         if (mapState.get(key).size() > nBefore){
             TagKafkaInfo firstTag = mapState.get(key).poll();
             BigDecimal firstTagValue = firstTag.getValue();
-            TagKafkaInfo newTag = new TagKafkaInfo();
-            BeanUtils.copyProperties(newTag, value);
+//            TagKafkaInfo newTag = new TagKafkaInfo();
+//            BeanUtils.copyProperties(newTag, value);
             try {
                 BigDecimal trendValue = value.getValue().divide(firstTagValue, 4, BigDecimal.ROUND_HALF_UP);
-                newTag.setValue(trendValue);
+                value.setValue(trendValue);
             } catch (Exception e) {
-                newTag.setValue(null);
+                value.setValue(null);
                 e.printStackTrace();
             }
-            BytTagUtil.outputByKeyed(newTag,ctx,out,dwdOutPutTag);
+            BytTagUtil.outputByKeyed(value,ctx,out,dwdOutPutTag);
         }
 
 

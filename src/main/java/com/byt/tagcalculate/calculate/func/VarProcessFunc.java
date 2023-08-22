@@ -57,16 +57,16 @@ public class VarProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, T
         if (mapState.get(key).size() > nBefore){
             TagKafkaInfo firstTag = mapState.get(key).poll();
             BigDecimal firstTagValue = firstTag.getValue();
-            TagKafkaInfo newTag = new TagKafkaInfo();
-            BeanUtils.copyProperties(newTag, value);
+//            TagKafkaInfo newTag = new TagKafkaInfo();
+//            BeanUtils.copyProperties(newTag, value);
             try {
                 BigDecimal diffValue = value.getValue().subtract(firstTagValue);
-                newTag.setValue(diffValue);
+                value.setValue(diffValue);
             } catch (Exception e) {
-                newTag.setValue(null);
+                value.setValue(null);
                 e.printStackTrace();
             }
-            BytTagUtil.outputByKeyed(newTag,ctx,out,dwdOutPutTag);
+            BytTagUtil.outputByKeyed(value,ctx,out,dwdOutPutTag);
         }
 
 

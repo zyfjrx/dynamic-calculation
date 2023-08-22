@@ -2,7 +2,6 @@ package com.byt.tagcalculate.calculate.func;
 
 import com.byt.common.utils.BytTagUtil;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.flink.cep.functions.PatternProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
@@ -34,9 +33,10 @@ public class LastCepPatternProcessFunc extends PatternProcessFunction<TagKafkaIn
             List<TagKafkaInfo> tag = map.get("tag");
             second = tag.get(tag.size() - 1);
         }
-        TagKafkaInfo newTag = new TagKafkaInfo();
-        BeanUtils.copyProperties(newTag, second);
-        newTag.setValue(first.getValue());
-        BytTagUtil.outputByKeyed(newTag, context, collector, dwdOutPutTag);
+//        TagKafkaInfo newTag = new TagKafkaInfo();
+//        BeanUtils.copyProperties(newTag, second);
+//        newTag.setValue(first.getValue());
+        first.setTime(second.getTime());
+        BytTagUtil.outputByKeyed(first, context, collector, dwdOutPutTag);
     }
 }

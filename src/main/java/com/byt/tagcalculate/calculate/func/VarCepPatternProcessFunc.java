@@ -35,10 +35,10 @@ public class VarCepPatternProcessFunc extends PatternProcessFunction<TagKafkaInf
             List<TagKafkaInfo> tag = map.get("tag");
             second = tag.get(tag.size() - 1);
         }
-        TagKafkaInfo newTag = new TagKafkaInfo();
-        BeanUtils.copyProperties(newTag, second);
+//        TagKafkaInfo newTag = new TagKafkaInfo();
+//        BeanUtils.copyProperties(newTag, second);
         BigDecimal diffValue = second.getValue().subtract(first.getValue());
-        newTag.setValue(diffValue);
-        BytTagUtil.outputByKeyed(newTag, context, collector, dwdOutPutTag);
+        second.setValue(diffValue);
+        BytTagUtil.outputByKeyed(second, context, collector, dwdOutPutTag);
     }
 }
