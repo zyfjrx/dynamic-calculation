@@ -523,7 +523,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                 .keyBy(r -> r.getTime())
                 .window(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new PreProcessFunction())
-                .addSink(MyKafkaUtil.getProducerWithTopicData())
+                .addSink(MyKafkaUtil.getProducerWithTopicData(parameterTool.get("kafka.server")))
                 .name("中间算子回流");
 
         // send to mysql 分钟级别数据

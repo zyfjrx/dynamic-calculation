@@ -5,7 +5,6 @@ import com.byt.common.deserialization.TagInfoDeserializationSchema;
 import com.byt.common.deserialization.TopicDataDeserialization;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TopicData;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
@@ -71,41 +70,7 @@ public class MyKafkaUtil {
     }
 
 
-    /**
-     * 消费kafka数据转化为pojo类 Watermark
-     *
-     * @param topics
-     * @param groupId
-     * @return
-     */
-    public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumerWithTopics(List<String> topics, String groupId) {
-        Properties properties = new Properties();
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
-                topics,
-                new TagInfoDeserializationSchema(),
-                properties
-        );
-        return kafkaConsumer;
-    }
 
-    /**
-     * kafka-消费者
-     *
-     * @param topic
-     * @param groupId
-     * @return
-     */
-    public static FlinkKafkaConsumer<String> getKafkaConsumer(String topic, String groupId) {
-        Properties properties = new Properties();
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        return new FlinkKafkaConsumer<String>(
-                topic,
-                new SimpleStringSchema(),
-                properties
-        );
-    }
 
     public static FlinkKafkaProducer<String> getKafkaProducer(String topic,String server) {
         Properties properties = new Properties();
@@ -130,8 +95,9 @@ public class MyKafkaUtil {
      *
      * @return
      */
-    public static FlinkKafkaProducer getProducerWithTopicData() {
+    public static FlinkKafkaProducer getProducerWithTopicData(String server) {
         Properties properties = new Properties();
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,server);
         properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 15 * 60 * 1000L + "");
         return new FlinkKafkaProducer<TopicData>(
                 "DEFAULT_TOPIC",
@@ -141,16 +107,5 @@ public class MyKafkaUtil {
         );
     }
 
-
-    //获取FlinkKafkaProducer对象
-    public static <T> FlinkKafkaProducer<T> getKafkaSinkBySchema(KafkaSerializationSchema<T> kafkaSerializationSchema) {
-        Properties properties = new Properties();
-        return new FlinkKafkaProducer<T>(
-                "DEFAULT_TOPIC",
-                kafkaSerializationSchema,
-                properties,
-                FlinkKafkaProducer.Semantic.AT_LEAST_ONCE
-        );
-    }
 
 }
