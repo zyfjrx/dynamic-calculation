@@ -2,6 +2,7 @@ package com.byt.tagcalculate.calculate.func;
 
 import com.byt.common.utils.BytTagUtil;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -12,6 +13,7 @@ import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -53,11 +55,12 @@ public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, 
         }
         if (mapState.get(key).size() > nBefore){
             TagKafkaInfo tagKafkaInfo = mapState.get(key).poll();
-            // 存在oom风险
- //           BigDecimal tagKafkaInfoValue = tagKafkaInfo.getValue();
-//            TagKafkaInfo newTag = new TagKafkaInfo();
-//            BeanUtils.copyProperties(newTag, value);
-//            newTag.setValue(tagKafkaInfoValue);
+            // 存在oom风险 GC overhead limit exceeded
+/*            BigDecimal tagKafkaInfoValue = tagKafkaInfo.getValue();
+            TagKafkaInfo newTag = new TagKafkaInfo();
+            BeanUtils.copyProperties(newTag, value);
+            newTag.setValue(tagKafkaInfoValue);*/
+            assert tagKafkaInfo != null;
             tagKafkaInfo.setTime(value.getTime());
             BytTagUtil.outputByKeyed(tagKafkaInfo,ctx,out,dwdOutPutTag);
         }

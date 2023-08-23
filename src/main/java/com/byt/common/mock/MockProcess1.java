@@ -76,7 +76,7 @@ public class MockProcess1 {
                             ctx.collect(mockBean);
                             System.out.println("发送数据：" + mockBean + ",发送时间：" + new Timestamp(mockBean.getTs()));
                             times--;
-                            Thread.sleep(10L);
+                            Thread.sleep(1000L);
                         }
                     }
 
