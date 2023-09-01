@@ -11,6 +11,9 @@ public class DataSourceGetter {
         druidDataSource.setUsername(ConfigManager.getProperty("mysql.username"));
         druidDataSource.setPassword(ConfigManager.getProperty("mysql.password"));
         druidDataSource.setDefaultAutoCommit(false);
+        druidDataSource.setMaxActive(10);
+        druidDataSource.setInitialSize(4);
+        druidDataSource.setMinIdle(5);
         return druidDataSource;
     }
     public static DruidDataSource getGpDataSource() {
@@ -19,6 +22,9 @@ public class DataSourceGetter {
         druidDataSource.setUsername(ConfigManager.getProperty("greenplum.user"));
         druidDataSource.setPassword(ConfigManager.getProperty("greenplum.pass"));
         druidDataSource.setDefaultAutoCommit(false);
+        druidDataSource.setMaxActive(10);
+        druidDataSource.setInitialSize(4);
+        druidDataSource.setMinIdle(5);
         return druidDataSource;
     }
 
@@ -30,6 +36,9 @@ public class DataSourceGetter {
         druidDataSource.setUsername(username);
         druidDataSource.setPassword(password);
         druidDataSource.setDefaultAutoCommit(false);
+        druidDataSource.setMaxActive(10);
+        druidDataSource.setInitialSize(4);
+        druidDataSource.setMinIdle(5);
         return druidDataSource;
     }
 }
