@@ -21,7 +21,7 @@ import java.util.*;
  * @author: zhangyifan
  * @date: 2022/9/16 13:52
  */
-public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafkaInfo>, String, List<TagKafkaInfo>> implements PropertiesCdc<TagProperties>{
+public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafkaInfo>, String, List<TagKafkaInfo>> {
     private MapStateDescriptor<String, TagProperties> mapStateDescriptor;
     //private String startjobs;
     private Map<String, TagProperties> bytInfoCache;
@@ -67,10 +67,8 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
     @Override
     public void processBroadcastElement(String value, BroadcastProcessFunction<List<TagKafkaInfo>, String, List<TagKafkaInfo>>.Context ctx, Collector<List<TagKafkaInfo>> out) throws Exception {
         BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
-        JSONObject jsonObject = JSON.parseObject(value);
-        opHandler(jsonObject,broadcastState);
         // 获取并解析数据，方便主流操作
-       /* JSONObject jsonObject = JSON.parseObject(value);
+        JSONObject jsonObject = JSON.parseObject(value);
         System.out.println("json>>>>>:" + jsonObject);
         String op = jsonObject.getString("op");
         TagProperties after = JSON.parseObject(jsonObject.getString("after"), TagProperties.class);
@@ -85,36 +83,14 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
                 hasTags.add(after.tag_name.trim());
             }
             broadcastState.put(key, after);
-        } else {
+        } else if (after == null) {
             TagProperties before = JSON.parseObject(jsonObject.getString("before"), TagProperties.class);
             String key = before.byt_name + before.task_name;
             broadcastState.remove(key);
         }
         System.out.println("after:" + after);
         System.out.println("hasTags---->" + hasTags);
-        System.out.println("keys---->" + keys);*/
-        System.out.println("hasTags---->" + hasTags);
         System.out.println("keys---->" + keys);
     }
 
-    @Override
-    public void broadcastStateAdd(JSONObject json, BroadcastState<String, TagProperties> broadcastState) throws Exception {
-        TagProperties tagProperties = json.toJavaObject(TagProperties.class);
-        String key = tagProperties.byt_name + tagProperties.task_name;
-        keys.add(key);
-        if (tagProperties.tag_name.startsWith(parameterTool.get("formula.tag.start"))) {
-            Set<String> tagSet = QlexpressUtil.getTagSet(tagProperties.tag_name.trim());
-            hasTags.addAll(tagSet);
-        } else {
-            hasTags.add(tagProperties.tag_name.trim());
-        }
-        broadcastState.put(key, tagProperties);
-    }
-
-    @Override
-    public void broadcastStateDel(JSONObject json, BroadcastState<String, TagProperties> broadcastState) throws Exception {
-        TagProperties tagProperties = json.toJavaObject(TagProperties.class);
-        String key = tagProperties.byt_name + tagProperties.task_name;
-        broadcastState.remove(key);
-    }
 }
