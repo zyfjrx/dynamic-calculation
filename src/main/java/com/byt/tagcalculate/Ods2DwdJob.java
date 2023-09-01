@@ -92,7 +92,7 @@ public class Ods2DwdJob {
                     @Override
                     public void flatMap(List<TagKafkaInfo> tagKafkaInfos, Collector<String> collector) throws Exception {
                         for (TagKafkaInfo tagKafkaInfo : tagKafkaInfos) {
-                            if (tagKafkaInfo.getStatus() == 1) {
+                            if (tagKafkaInfo.getStatus() != null && tagKafkaInfo.getStatus() == 1) {
                                 //tagKafkaInfo.setTime(BytTagUtil.reformat(tagKafkaInfo.getTimestamp()));
                                 String jsonString = JSONObject.toJSONString(tagKafkaInfo);
                                 collector.collect(jsonString);
