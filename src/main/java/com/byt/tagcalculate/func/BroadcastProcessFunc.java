@@ -50,7 +50,9 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         // 获取广播配置信息 封装为map
         for (String key : keys) {
             TagProperties tagProperties = broadcastState.get(key);
-            bytInfoCache.put(key, tagProperties);
+            if (tagProperties != null){
+                bytInfoCache.put(key, tagProperties);
+            }
         }
         // 主流数据先到等待配置3s
         if (bytInfoCache.keySet().size() == 0) {
@@ -66,31 +68,39 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
 
     @Override
     public void processBroadcastElement(String value, BroadcastProcessFunction<List<TagKafkaInfo>, String, List<TagKafkaInfo>>.Context ctx, Collector<List<TagKafkaInfo>> out) throws Exception {
-        BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
+        System.out.println(value + "--------------------------");
         // 获取并解析数据，方便主流操作
         JSONObject jsonObject = JSON.parseObject(value);
         System.out.println("json>>>>>:" + jsonObject);
-        String op = jsonObject.getString("op");
         TagProperties after = JSON.parseObject(jsonObject.getString("after"), TagProperties.class);
+        BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
+        String op = jsonObject.getString("op");
+        //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
         if (after != null) {
             after.setOp(op);
             String key = after.byt_name + after.task_name;
-            keys.add(key);
-            if (after.tag_name.startsWith(parameterTool.get("formula.tag.start"))) {
-                Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name.trim());
-                hasTags.addAll(tagSet);
-            } else {
-                hasTags.add(after.tag_name.trim());
+            if (!op.equals("d") && after.status == 1) {
+                keys.add(key);
+                if (after.tag_name.contains(parameterTool.get("formula.tag.start"))) {
+                    Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name.trim());
+                    hasTags.addAll(tagSet);
+                } else {
+                    hasTags.add(after.tag_name.trim());
+                }
+                broadcastState.put(key, after);
+            } else if ("u".equals(op)) {
+                broadcastState.put(key, after);
             }
-            broadcastState.put(key, after);
         } else if (after == null) {
             TagProperties before = JSON.parseObject(jsonObject.getString("before"), TagProperties.class);
             String key = before.byt_name + before.task_name;
             broadcastState.remove(key);
         }
+
         System.out.println("after:" + after);
         System.out.println("hasTags---->" + hasTags);
         System.out.println("keys---->" + keys);
+
     }
 
 }

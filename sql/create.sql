@@ -27,7 +27,7 @@ create table dws_tag_second
 (
     byt_name         varchar(255) null,
     tag_topic        varchar(255) null,
-    value            double       null,
+    value            decimal(20,4) null,
     calculate_time   timestamp    null,
     calculate_type   varchar(255) null,
     calculate_params varchar(255) null,

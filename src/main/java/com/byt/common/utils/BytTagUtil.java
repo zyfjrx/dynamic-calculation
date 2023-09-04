@@ -25,7 +25,7 @@ public class BytTagUtil {
     private static List<String> twoParamTimeCal = Arrays.asList(new String[]{"AVG", "INTERP", "VARIANCE", "STD", "MAX", "MIN", "MEDIAN", "RANGE", "CV", "SLOPE", "PSEQ", "SUM"});
     private static List<String> twoParamCal = Arrays.asList(new String[]{"KF"});
     private static List<String> dejumpParamCal = Arrays.asList(new String[]{"DEJUMP"});
-    private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "RAW","EMA","RSI"});
+    private static List<String> oneParamCal = Arrays.asList(new String[]{"TREND", "VAR", "LAST", "RAW", "EMA", "RSI"});
     private static List<String> oneParamCalFOF = Arrays.asList(new String[]{"FOF"});
 
     private static Integer N = 0;
@@ -46,6 +46,17 @@ public class BytTagUtil {
             }
         }
         return tagInfoMap;
+    }
+
+
+    public static Integer getNormalState(String max, String min, BigDecimal value) {
+        BigDecimal value_max = new BigDecimal(max.trim());
+        BigDecimal value_min = new BigDecimal(min.trim());
+        if (value_max.compareTo(value_min) == 0 || (value.compareTo(value_min) == 1 && value.compareTo(value_max) == -1)) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
 
@@ -80,6 +91,8 @@ public class BytTagUtil {
             String calculateType = entry.getValue().calculate_type;
             String param = entry.getValue().param;
             String op = entry.getValue().op;
+            String max = entry.getValue().value_max;
+            String min = entry.getValue().value_min;
 
             if (calculateType == null) {
                 continue;
@@ -90,10 +103,11 @@ public class BytTagUtil {
                 try {
                     Object r = QlexpressUtil.computeExpress(tagInfoMap, tagName);
                     bytTag.setValue(new BigDecimal(r.toString()));
+                    Integer normalState = getNormalState(max, min, new BigDecimal(r.toString()));
+                    bytTag.setIsNormal(normalState);
                 } catch (Exception e) {
                     bytTag.setValue(new BigDecimal(0));
                 }
-
                 TagKafkaInfo originTag = tagInfoMap.get(tagSet.toArray()[0]);
                 if (originTag != null && !originTag.getTopic().equals(tagTopic)) {
                     continue;
@@ -111,6 +125,8 @@ public class BytTagUtil {
                     if (!originTag.getTopic().equals(tagTopic)) {
                         continue;
                     }
+                    Integer normalState = getNormalState(max, min, originTag.getValue());
+                    bytTag.setIsNormal(normalState);
                     bytTag.setTime(originTag.getTime());
                     bytTag.setTopic(originTag.getTopic());
                     bytTag.setValue(originTag.getValue());
