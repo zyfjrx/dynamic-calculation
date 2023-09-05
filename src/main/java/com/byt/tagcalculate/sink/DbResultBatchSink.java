@@ -78,8 +78,8 @@ public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
         try {
             int[] count = ps.executeBatch();
             System.out.println("inserted " + Arrays.stream(count).count() + " records");
-            ps.clearBatch();
             connection.commit();
+            ps.clearBatch();
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
