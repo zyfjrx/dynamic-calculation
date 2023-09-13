@@ -1,4 +1,4 @@
-package com.byt.tagcalculate;
+package com.byt.tagcalculate.main;
 
 import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.EnvironmentUtils;
