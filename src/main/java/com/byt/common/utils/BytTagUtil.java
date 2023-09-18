@@ -108,6 +108,11 @@ public class BytTagUtil {
                 } catch (Exception e) {
                     bytTag.setValue(new BigDecimal(0));
                 }
+
+                if (tagSet.isEmpty()){
+                    return bytTagData;
+                }
+
                 TagKafkaInfo originTag = tagInfoMap.get(tagSet.toArray()[0]);
                 if (originTag != null && !originTag.getTopic().equals(tagTopic)) {
                     continue;
