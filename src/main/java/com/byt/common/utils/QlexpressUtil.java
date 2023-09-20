@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class QlexpressUtil {
-    public static String regEx =  "\\" + FormulaTag.START +  "(.*?)" + FormulaTag.END;
+    public static String regEx =  "\\" + "[" +  "(.*?)" + "]";
 
     public static Set<String> getTagSet(String expressContent) {
         Set<String> tagSet = new HashSet<>();
@@ -26,7 +26,7 @@ public class QlexpressUtil {
     }
 
     public static String bracketedStr(String s) {
-        return FormulaTag.START + s + FormulaTag.END;
+        return "[" + s + "]";
     }
 
     public static boolean evlExpress(HashMap<String, Object> tagMap, String expressContent) {
@@ -70,19 +70,21 @@ public class QlexpressUtil {
         }*/
 //([CXL2_HFD_A_yali_back] > [CXL2_HFD_A_yali_back])?1:0
 
-/*        String express = "([SERVER_OSC::C4T/C4AT03.MV] > [SERVER_OSC::C6T/C6T01.MV])?1:0";
-        //String express = "[CXL2_ZLJLL_50] + [CXL2_XS_yewei]";
+        //String express = "([SERVER_OSC::C4T/C4AT03.MV] > [SERVER_OSC::C6T/C6T01.MV])?1:0";
+/*        String express = "[CXL2_ZLJLL_50] + [CXL2_XS_yewei]";
         HashMap<String, TagKafkaInfo> tagMap = new HashMap<>();
         TagKafkaInfo a = new TagKafkaInfo();
         a.setValue(new BigDecimal(37).setScale(3, BigDecimal.ROUND_HALF_UP));
         TagKafkaInfo b = new TagKafkaInfo();
         b.setValue(new BigDecimal(3).setScale(3, BigDecimal.ROUND_HALF_UP));
-        tagMap.put("SERVER_OSC::C4T/C4AT03.MV", a);
-        tagMap.put("SERVER_OSC::C6T/C6T01.MV", b);
+        tagMap.put("CXL2_ZLJLL_50", a);
+        tagMap.put("CXL2_XS_yewei", b);
         Object r = computeExpress(tagMap, express);
-        System.out.println(regEx);*/
-
-        String express = "{SERVER_OSC::C4T/C4AT03.MV} - {SERVER_OSC::C6T/C6T01.MV}";
+        System.out.println(r);
+        Set<String> tagSet = QlexpressUtil.getTagSet(express);
+        TagKafkaInfo originTag = tagMap.get(tagSet.toArray()[0]);
+        System.out.println(originTag);*/
+/*        String express = "{SERVER_OSC::C4T/C4AT03.MV} - {SERVER_OSC::C6T/C6T01.MV}";
         System.out.println(regEx);
         System.out.println(getTagSet(express));
         HashMap<String, TagKafkaInfo> tagMap = new HashMap<>();
@@ -93,8 +95,8 @@ public class QlexpressUtil {
         tagMap.put("SERVER_OSC::C4T/C4AT03.MV", a);
         tagMap.put("SERVER_OSC::C6T/C6T01.MV", b);
         Object r = computeExpress(tagMap, express);
-        System.out.println(r);
-/*        String tagName = "[SERVER_OSC::C4T/C4AT03.MV] - [SERVER_OSC::C6T/C6T01.MV]";
+        System.out.println(r);*/
+/*        String tagName = "([SERVER_OSC::C4T/C4AT03.MV] > [SERVER_OSC::C6T/C6T01.MV])?1:0";
 
         Set<String> tagSet = QlexpressUtil.getTagSet(tagName);
         for (String s : tagSet) {
