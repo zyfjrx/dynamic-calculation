@@ -98,7 +98,8 @@ public class BytTagUtil {
                 continue;
             }
 
-            if (tagName.startsWith(parameterTool.get("formula.tag.start"))) {
+            if (tagName.contains(parameterTool.get("formula.tag.start")) &&
+                    tagName.contains(parameterTool.get("formula.tag.end"))) {
                 Set<String> tagSet = QlexpressUtil.getTagSet(tagName);
                 try {
                     Object r = QlexpressUtil.computeExpress(tagInfoMap, tagName);
@@ -107,10 +108,6 @@ public class BytTagUtil {
                     bytTag.setIsNormal(normalState);
                 } catch (Exception e) {
                     bytTag.setValue(new BigDecimal(0));
-                }
-
-                if (tagSet.isEmpty()){
-                    return bytTagData;
                 }
 
                 TagKafkaInfo originTag = tagInfoMap.get(tagSet.toArray()[0]);
@@ -147,7 +144,9 @@ public class BytTagUtil {
             bytTag.setCalculateParam(param);
             bytTag.setTaskName(entry.getValue().task_name);
             bytTag.setStatus(entry.getValue().status);
-            if (tagInfoMap.get(tagName) != null || tagName.startsWith(parameterTool.get("formula.tag.start"))) {
+            if (tagInfoMap.get(tagName) != null ||
+                    (tagName.contains(parameterTool.get("formula.tag.start")))
+                            && tagName.contains(parameterTool.get("formula.tag.end"))) {
                 bytTagData.add(parseParams(bytTag, calculateType, param));
             }
         }

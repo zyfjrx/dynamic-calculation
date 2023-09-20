@@ -81,7 +81,8 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
             String key = after.byt_name + after.task_name;
             if (!op.equals("d") && after.status == 1) {
                 keys.add(key);
-                if (after.tag_name.contains(parameterTool.get("formula.tag.start"))) {
+                if (after.tag_name.contains(parameterTool.get("formula.tag.start")) &&
+                        after.tag_name.contains(parameterTool.get("formula.tag.end"))) {
                     Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name.trim());
                     hasTags.addAll(tagSet);
                 } else {
