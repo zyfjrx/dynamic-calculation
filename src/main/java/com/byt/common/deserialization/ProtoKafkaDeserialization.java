@@ -33,6 +33,7 @@ public class ProtoKafkaDeserialization implements KafkaDeserializationSchema<Lis
     public List<TagKafkaInfo> deserialize(ConsumerRecord<byte[], byte[]> record) throws Exception {
         ArrayList<TagKafkaInfo> kafkaInfos = new ArrayList<>();
         byte[] data = record.value();
+        long kafkaTimestamp = record.timestamp();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         //SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -53,8 +54,15 @@ public class ProtoKafkaDeserialization implements KafkaDeserializationSchema<Lis
                 tagKafkaInfo.setName(kafkaInfoProtos.getName());
                 tagKafkaInfo.setTopic(record.topic());
                 // 统一时间格式
-                tagKafkaInfo.setTime(BytTagUtil.formatTime(pTime));
-                tagKafkaInfo.setTimestamp(sdf.parse(pTime).getTime());
+                // 解决opc发送时间延迟问题，如果相差超过1000ms则以实际写入kafka的时间为准，否则以原始时间为准
+                long tagTimestamp = sdf.parse(pTime).getTime();
+                if (Math.abs(kafkaTimestamp-tagTimestamp) > 1000L){
+                    tagKafkaInfo.setTimestamp(kafkaTimestamp);
+                    tagKafkaInfo.setTime(BytTagUtil.reformat(kafkaTimestamp));
+                }else {
+                    tagKafkaInfo.setTimestamp(tagTimestamp);
+                    tagKafkaInfo.setTime(BytTagUtil.formatTime(pTime));
+                }
                 if (strValue.equalsIgnoreCase("true") || strValue.equalsIgnoreCase("false")) {
                     tagKafkaInfo.setStrValue(strValue);
                     if (strValue.equalsIgnoreCase("true")) {
