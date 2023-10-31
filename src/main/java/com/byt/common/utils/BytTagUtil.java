@@ -250,9 +250,9 @@ public class BytTagUtil {
 
     public static Long timeParams(String str) {
         Long time = null;
-        if (str.contains("s")) {
+        if (str.toLowerCase().contains("s")) {
             time = Long.parseLong(str.replace("s", "")) * 1000L;
-        } else if (str.contains("m")) {
+        } else if (str.toLowerCase().contains("m")) {
             time = Long.parseLong(str.replace("m", "")) * 60L * 1000L;
         }
         return time;
