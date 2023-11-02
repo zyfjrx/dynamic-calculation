@@ -39,6 +39,7 @@ public class DataSourceGetter {
         druidDataSource.setMaxActive(10);
         druidDataSource.setInitialSize(4);
         druidDataSource.setMinIdle(5);
+        druidDataSource.setTransactionQueryTimeout(60);
         return druidDataSource;
     }
 }
