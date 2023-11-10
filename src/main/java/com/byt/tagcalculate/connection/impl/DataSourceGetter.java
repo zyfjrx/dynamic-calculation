@@ -36,9 +36,19 @@ public class DataSourceGetter {
         druidDataSource.setUsername(username);
         druidDataSource.setPassword(password);
         druidDataSource.setDefaultAutoCommit(false);
-        druidDataSource.setMaxActive(10);
-        druidDataSource.setInitialSize(4);
+        // 高峰期 看数据库能承担的最大并发数
+        druidDataSource.setMaxActive(20);
+        // 初始连接 日常并发
+        druidDataSource.setInitialSize(5);
+        // 空闲时候 最少保持连接数
         druidDataSource.setMinIdle(5);
+        druidDataSource.setMaxWait(10000L);
+        // 借出连接时测试 保证使用时连接是好的
+        //druidDataSource.setTestOnBorrow(true);
+        // 空闲时周期测试 压力小不能保证借走的时候是好的
+        //druidDataSource.setTestWhileIdle(true);
+        // 归还连接时测试
+        //druidDataSource.setTestOnReturn(false);
         druidDataSource.setTransactionQueryTimeout(60);
         return druidDataSource;
     }
