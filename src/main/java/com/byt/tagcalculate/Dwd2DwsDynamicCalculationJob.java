@@ -521,7 +521,7 @@ public class Dwd2DwsDynamicCalculationJob {
 
 // ======================================================= DWS =========================================================
 
-        env.execute("dws_dynamicCalculation_job");
+        env.execute("dws_dynamic_job");
     }
 
 }

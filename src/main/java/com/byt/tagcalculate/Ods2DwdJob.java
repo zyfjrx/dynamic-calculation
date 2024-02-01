@@ -107,6 +107,6 @@ public class Ods2DwdJob {
 
         resultDS.print();
         // 启动job
-        env.execute("dwd_arithmetic_job");
+        env.execute("dwd_dynamic_job");
     }
 }
