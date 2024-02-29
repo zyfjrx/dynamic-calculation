@@ -2,6 +2,7 @@ package com.byt.tagcalculate.func;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.Feature;
 import com.byt.common.utils.BytTagUtil;
 import com.byt.common.utils.FormulaTag;
 import com.byt.common.utils.QlexpressUtil;
@@ -14,6 +15,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -72,7 +74,7 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         // 获取并解析数据，方便主流操作
         JSONObject jsonObject = JSON.parseObject(value);
         System.out.println("json>>>>>:" + jsonObject);
-        TagProperties after = JSON.parseObject(jsonObject.getString("after"), TagProperties.class);
+        TagProperties after = JSON.toJavaObject(jsonObject.getJSONObject("after"),  TagProperties.class);
         BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
         String op = jsonObject.getString("op");
         //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
