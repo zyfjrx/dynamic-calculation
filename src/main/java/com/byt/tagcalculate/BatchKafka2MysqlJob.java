@@ -2,10 +2,13 @@ package com.byt.tagcalculate;
 
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
+import com.byt.tagcalculate.pojo.TagKafkaInfo;
+import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
 import org.apache.flink.connector.jdbc.JdbcSink;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.sql.Timestamp;
@@ -25,7 +28,7 @@ public class BatchKafka2MysqlJob {
         long stopTimestamp = pattern.get().parse("2024-02-29 15:00:00").getTime();*/
         long startTimestamp = pattern.get().parse(args[0]).getTime();
         long stopTimestamp = pattern.get().parse(args[1]).getTime();
-        env
+        SingleOutputStreamOperator<TagKafkaInfo> kafkaSource = env
                 .addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         parameterTool.get("kafka.dwd.topic"),
                         "test2_20230808",
@@ -33,8 +36,17 @@ public class BatchKafka2MysqlJob {
                         startTimestamp,
                         stopTimestamp
                 ))
+                .filter(new FilterFunction<TagKafkaInfo>() {
+                    @Override
+                    public boolean filter(TagKafkaInfo tagKafkaInfo) throws Exception {
+                        return tagKafkaInfo.getCalculateParam().contains("m");
+                    }
+                });
+
+        kafkaSource.print();
+        kafkaSource
                 .addSink(JdbcSink.sink(
-                        "insert into " + parameterTool.get("dws.second.table") + "(byt_name, tag_topic, value, calculate_time, calculate_type,calculate_params, job_name, line_id) values(?, ?, ?, ?, ?, ?, ?, ?);",
+                        "insert into " + args[2] + "(byt_name, tag_topic, value, calculate_time, calculate_type,calculate_params, job_name, line_id) values(?, ?, ?, ?, ?, ?, ?, ?);",
                         (ps, tag) -> {
                             ps.setString(1, tag.getBytName());
                             ps.setString(2, tag.getTopic());
@@ -46,8 +58,8 @@ public class BatchKafka2MysqlJob {
                             ps.setInt(8, tag.getLineId());
                         },
                         JdbcExecutionOptions.builder()
-                                .withBatchIntervalMs(100L)
-                                .withBatchSize(200)
+                                .withBatchIntervalMs(1000L)
+                                .withBatchSize(500)
                                 .build(),
                         new JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
                                 .withUrl("jdbc:mysql://" + parameterTool.get("mysql.host") + ":" + parameterTool.getInt("mysql.port") + "/" + parameterTool.get("mysql.database") + "?autoReconnect=true&useSSL=false&queryTimeout=2400&characterEncoding=utf-8&serverTimezone=GMT%2B8")
