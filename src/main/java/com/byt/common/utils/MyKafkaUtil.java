@@ -8,7 +8,6 @@ import com.byt.tagcalculate.pojo.TopicData;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
-import org.apache.flink.streaming.connectors.kafka.SpecificFlinkKafkaConsumer;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -70,19 +69,6 @@ public class MyKafkaUtil {
         return kafkaConsumer;
     }
 
-    public static FlinkKafkaConsumer<TagKafkaInfo> getKafkaPojoConsumer(String topic, String groupId,String server,long startupOffsetsTimestamp, long stopConsumingTimestamp) {
-        Properties properties = new Properties();
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
-
-        SpecificFlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new SpecificFlinkKafkaConsumer<>(
-                topic,
-                new TagInfoDeserializationSchema(),
-                properties
-        );
-        kafkaConsumer.setIntervalFromTimestamp(startupOffsetsTimestamp, stopConsumingTimestamp);
-        return kafkaConsumer;
-    }
 
 
 
