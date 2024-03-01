@@ -5,7 +5,7 @@ import com.byt.common.utils.ConfigManager;
 
 public class DataSourceGetter {
     public static DruidDataSource getMysqlDataSource() {
-        String url = "jdbc:mysql://"+ConfigManager.getProperty("mysql.host")+":"+ConfigManager.getProperty("mysql.port")+"/"+ConfigManager.getProperty("mysql.database")+"?autoReconnect=true&useSSL=false&characterEncoding=utf-8&serverTimezone=GMT%2B8";
+        String url = "jdbc:mysql://"+ConfigManager.getProperty("mysql.host")+":"+ConfigManager.getProperty("mysql.port")+"/"+ConfigManager.getProperty("mysql.database")+"?autoReconnect=true&queryTimeout=2400&useSSL=false&characterEncoding=utf-8&serverTimezone=GMT%2B8";
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(url);
         druidDataSource.setUsername(ConfigManager.getProperty("mysql.username"));
@@ -29,7 +29,7 @@ public class DataSourceGetter {
     }
 
     public static DruidDataSource getMysqlDataSource(String host,Integer port,String username,String password,String database) {
-        String url = "jdbc:mysql://"+host+":"+port+"/"+database+"?autoReconnect=true&useSSL=false&characterEncoding=utf-8&serverTimezone=GMT%2B8";
+        String url = "jdbc:mysql://"+host+":"+port+"/"+database+"?autoReconnect=true&useSSL=false&queryTimeout=2400&characterEncoding=utf-8&serverTimezone=GMT%2B8";
         System.out.println(url);
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setUrl(url);
@@ -49,6 +49,7 @@ public class DataSourceGetter {
         //druidDataSource.setTestWhileIdle(true);
         // 归还连接时测试
         //druidDataSource.setTestOnReturn(false);
+//        druidDataSource.setQueryTimeout(2400);
         druidDataSource.setTransactionQueryTimeout(60);
         return druidDataSource;
     }
