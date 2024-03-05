@@ -252,12 +252,6 @@
             <version>build210</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.doris</groupId>
-            <artifactId>flink-doris-connector-1.13_2.12</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-
     </dependencies>
     <build>
         <plugins>
