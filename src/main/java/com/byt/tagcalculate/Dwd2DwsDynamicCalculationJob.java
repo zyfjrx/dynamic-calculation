@@ -31,7 +31,6 @@ import org.apache.flink.util.OutputTag;
 
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  * @title: DWS动态计算
@@ -69,7 +68,7 @@ public class Dwd2DwsDynamicCalculationJob {
 
         // 定义测输出流标签
         HashMap<String, OutputTag<TagKafkaInfo>> sideOutPutTags = SideOutPutTagUtil.getSideOutPutTags();
-        Set<String> strings = sideOutPutTags.keySet();
+ //       Set<String> strings = sideOutPutTags.keySet();
 //        for (String string : strings) {
 //            System.out.println(string + "------------------>" + sideOutPutTags.get(string));
 //        }
