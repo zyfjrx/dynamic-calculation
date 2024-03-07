@@ -29,7 +29,7 @@ public class Dws2Doris {
         };
         SingleOutputStreamOperator<TagKafkaInfo> mainDS = env.addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         parameterTool.get("kafka.dws.topic"),
-                        "20240306888888",
+                        "20240307",
                         parameterTool.get("kafka.server")))
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<TagKafkaInfo>forBoundedOutOfOrderness(Duration.ofSeconds(1L))

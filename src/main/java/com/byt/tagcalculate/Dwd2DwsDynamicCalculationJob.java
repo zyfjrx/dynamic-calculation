@@ -84,7 +84,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 // 2.1 添加数据源
                 .addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         parameterTool.get("kafka.dwd.topic"),
-                        "test2_20230808",
+                        "test2_202308088",
                         parameterTool.get("kafka.server"))
                 )
                 .assignTimestampsAndWatermarks(
