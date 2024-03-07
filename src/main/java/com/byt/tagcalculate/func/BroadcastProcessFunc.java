@@ -2,20 +2,18 @@ package com.byt.tagcalculate.func;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.Feature;
 import com.byt.common.utils.BytTagUtil;
-import com.byt.common.utils.FormulaTag;
 import com.byt.common.utils.QlexpressUtil;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
-import org.apache.flink.api.common.state.*;
-import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.common.state.BroadcastState;
+import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -75,13 +73,16 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         JSONObject jsonObject = JSON.parseObject(value);
         System.out.println("json>>>>>:" + jsonObject);
         TagProperties after = JSON.toJavaObject(jsonObject.getJSONObject("after"),  TagProperties.class);
+        TagProperties before = JSON.toJavaObject(jsonObject.getJSONObject("before"),  TagProperties.class);
         BroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
         String op = jsonObject.getString("op");
+        System.out.println(op);
         //todo 根据上线状态动态过滤已上线的配置，解决删除配置导致程序挂掉的问题
+
         if (after != null) {
             after.setOp(op);
             String key = after.byt_name + after.task_name;
-            if (!op.equals("d") && after.status == 1) {
+            if ((op.equals("r") || op.equals("c") )&& after.status == 1) {
                 keys.add(key);
                 if (after.tag_name.contains(parameterTool.get("formula.tag.start")) &&
                         after.tag_name.contains(parameterTool.get("formula.tag.end"))) {
@@ -92,11 +93,14 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
                 }
                 broadcastState.put(key, after);
             } else if ("u".equals(op)) {
+                String beforeKey = before.byt_name + before.task_name;
+                keys.remove(beforeKey);
+                keys.add(key);
                 broadcastState.put(key, after);
             }
         } else if (after == null) {
-            TagProperties before = JSON.parseObject(jsonObject.getString("before"), TagProperties.class);
             String key = before.byt_name + before.task_name;
+            keys.remove(key);
             broadcastState.remove(key);
         }
 

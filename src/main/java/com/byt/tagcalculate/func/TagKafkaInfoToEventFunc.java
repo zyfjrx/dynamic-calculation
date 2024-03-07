@@ -43,7 +43,8 @@ public class TagKafkaInfoToEventFunc extends ProcessFunction<TagKafkaInfo, Event
 
     @Override
     public void processElement(TagKafkaInfo tagKafkaInfo, ProcessFunction<TagKafkaInfo, Event>.Context context, Collector<Event> collector) throws Exception {
-        String device = "root."+parameterTool.get("iotdb.devicePrefix")+".line"+tagKafkaInfo.getLineId()+"."+tagKafkaInfo.getBytName();
+        //String device = "root."+parameterTool.get("iotdb.devicePrefix")+".line"+tagKafkaInfo.getLineId()+"."+tagKafkaInfo.getBytName();
+        String device = "root."+parameterTool.get("iotdb.devicePrefix")+"."+tagKafkaInfo.getTaskName()+"."+tagKafkaInfo.getBytName();
         values.add(tagKafkaInfo.getValue().toString());
         values.add(tagKafkaInfo.getCalculateType());
         values.add(tagKafkaInfo.getCalculateParam());
