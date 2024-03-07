@@ -56,7 +56,7 @@ public class ProtoKafkaDeserialization implements KafkaDeserializationSchema<Lis
                 // 统一时间格式
                 // 解决opc发送时间延迟问题，如果相差超过1000ms则以实际写入kafka的时间为准，否则以原始时间为准
                 long tagTimestamp = sdf.parse(pTime).getTime();
-                if (Math.abs(kafkaTimestamp-tagTimestamp) > 1000L){
+                if (Math.abs(kafkaTimestamp-tagTimestamp) > 10000L){
                     tagKafkaInfo.setTimestamp(kafkaTimestamp);
                     tagKafkaInfo.setTime(BytTagUtil.reformat(kafkaTimestamp));
                 }else {

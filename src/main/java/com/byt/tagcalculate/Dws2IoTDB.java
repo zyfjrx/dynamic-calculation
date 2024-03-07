@@ -32,7 +32,7 @@ public class Dws2IoTDB {
                         "20240000000",
                         parameterTool.get("kafka.server")))
                 .process(new TagKafkaInfoToEventFunc())
-                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
+                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(2L)))
                 .process(new ProcessAllWindowFunction<Event, List<Event>, TimeWindow>() {
                     @Override
                     public void process(ProcessAllWindowFunction<Event, List<Event>, TimeWindow>.Context context, Iterable<Event> iterable, Collector<List<Event>> collector) throws Exception {
@@ -41,7 +41,7 @@ public class Dws2IoTDB {
                     }
                 });
         //mainDS.print();
-        mainDS.addSink(new IotDBSink());
+        mainDS.addSink(new IotDBSink()).setParallelism(2);
         env.execute(Dws2IoTDB.class.getSimpleName());
 
     }
