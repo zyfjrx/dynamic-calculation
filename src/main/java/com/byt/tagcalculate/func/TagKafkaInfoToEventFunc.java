@@ -54,6 +54,7 @@ public class TagKafkaInfoToEventFunc extends ProcessFunction<TagKafkaInfo, Event
             collector.collect(event);
             values.clear();
         }catch (Exception e) {
+            values.clear();
             e.printStackTrace();
             System.out.println("convert to event failed ! Cause:" + e.getMessage() +"------>"+tagKafkaInfo);
         }
