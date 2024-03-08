@@ -208,6 +208,11 @@
             <version>3.6.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>ch.ethz.ganymed</groupId>
+            <artifactId>ganymed-ssh2</artifactId>
+            <version>build210</version>
+        </dependency>
         <!-- flink-doris-connector -->
         <dependency>
             <groupId>org.apache.doris</groupId>
