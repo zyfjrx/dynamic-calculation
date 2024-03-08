@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.main;
+package com.byt.tagcalculate.bak;
 
 import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.EnvironmentUtils;
@@ -16,6 +16,7 @@ import org.apache.flink.streaming.api.windowing.time.Time;
  * @author: zhangyf
  * @date: 2023/7/7 16:26
  **/
+@Deprecated
 public class Kafka2MySQL {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();

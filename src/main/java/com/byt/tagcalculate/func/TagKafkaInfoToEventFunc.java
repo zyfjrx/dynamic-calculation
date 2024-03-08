@@ -13,8 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TagKafkaInfoToEventFunc extends ProcessFunction<TagKafkaInfo, Event> {
-    private  List<String> measurements;
-    private  List<TSDataType> types;
+    private List<String> measurements;
+    private List<TSDataType> types;
 
     private List<Object> values;
 
@@ -22,41 +22,38 @@ public class TagKafkaInfoToEventFunc extends ProcessFunction<TagKafkaInfo, Event
 
     @Override
     public void open(Configuration parameters) throws Exception {
-        measurements = Arrays.asList(
-                "value",
-                "type",
-                "param",
-                "createTime"
-        );
-
+        measurements = new ArrayList<>(2);
         types = Arrays.asList(
-                TSDataType.TEXT,
-                TSDataType.TEXT,
                 TSDataType.TEXT,
                 TSDataType.TEXT
         );
-        values = new ArrayList<>();
-
+        values = new ArrayList<>(2);
         parameterTool = (ParameterTool)
-                getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+                getRuntimeContext()
+                        .getExecutionConfig()
+                        .getGlobalJobParameters();
     }
 
     @Override
     public void processElement(TagKafkaInfo tagKafkaInfo, ProcessFunction<TagKafkaInfo, Event>.Context context, Collector<Event> collector) throws Exception {
         try {
-            //String device = "root."+parameterTool.get("iotdb.devicePrefix")+".line"+tagKafkaInfo.getLineId()+"."+tagKafkaInfo.getBytName();
-            String device = "root."+parameterTool.get("iotdb.devicePrefix")+"_line"+tagKafkaInfo.getLineId()+"."+tagKafkaInfo.getTaskName()+"."+tagKafkaInfo.getBytName();
+            String device = "root." + parameterTool.get("iotdb.devicePrefix") + "_line" + tagKafkaInfo.getLineId() + "." + tagKafkaInfo.getTaskName();
+            measurements.add(tagKafkaInfo.getBytName());
+            measurements.add("create_time");
             values.add(tagKafkaInfo.getValue().toString());
-            values.add(tagKafkaInfo.getCalculateType());
-            values.add(tagKafkaInfo.getCalculateParam());
             values.add(tagKafkaInfo.getTime());
             Event event = new Event(device, tagKafkaInfo.getTimestamp(), measurements, types, values);
             collector.collect(event);
             values.clear();
-        }catch (Exception e) {
+            measurements.clear();
+        } catch (Exception e) {
             values.clear();
+            measurements.clear();
             e.printStackTrace();
-            System.out.println("convert to event failed ! Cause:" + e.getMessage() +"------>"+tagKafkaInfo);
+            System.out.println("convert to event failed ! Cause:" + e.getMessage() + "------>" + tagKafkaInfo);
+        }finally {
+            values.clear();
+            measurements.clear();
         }
 
     }

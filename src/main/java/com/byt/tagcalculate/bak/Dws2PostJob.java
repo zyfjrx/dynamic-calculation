@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.main;
+package com.byt.tagcalculate.bak;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * @author: zhangyifan
  * @date: 2022/9/27 16:10
  */
+@Deprecated
 public class Dws2PostJob {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();

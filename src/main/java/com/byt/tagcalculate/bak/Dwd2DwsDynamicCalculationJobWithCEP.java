@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.main;
+package com.byt.tagcalculate.bak;
 
 import com.byt.common.utils.ConfigManager;
 import com.byt.common.utils.EnvironmentUtils;
@@ -38,6 +38,7 @@ import java.util.Set;
  * @author: zhangyifan
  * @date: 2023/7/10 16:51
  */
+@Deprecated
 public class Dwd2DwsDynamicCalculationJobWithCEP {
 
     public static void main(String[] args) throws Exception {

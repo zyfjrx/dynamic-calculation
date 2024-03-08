@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.main;
+package com.byt.tagcalculate.bak;
 
 
 import com.byt.common.utils.ConfigManager;
@@ -14,8 +14,8 @@ import java.util.Date;
  * @author: zhangyifan
  * @date: 2022/9/18 16:51
  */
-
-public class DailyDeleteSecondBak {
+@Deprecated
+public class DailyDeleteTodayBak {
     private static final String driver = "org.postgresql.Driver";
     private static final String url = ConfigManager.getProperty("greenplum.url");
     private static final String username = ConfigManager.getProperty("greenplum.user");
@@ -44,8 +44,8 @@ public class DailyDeleteSecondBak {
         Date date = new Date();// 获取当前时间
 
         try {
-            Connection conn = DailyDeleteSecondBak.getConnection();
-            int r = conn.createStatement().executeUpdate("delete from byt_grid_data.dws_tag_second");
+            Connection conn = DailyDeleteTodayBak.getConnection();
+            int r = conn.createStatement().executeUpdate("delete from realtime.dws_tag_today where calculate_time < current_date");
             System.out.println(sdf.format(date) + " 删除" + r + "行");
         } catch (Exception ex) {
             ex.printStackTrace();

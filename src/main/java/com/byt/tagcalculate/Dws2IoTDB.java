@@ -1,5 +1,6 @@
 package com.byt.tagcalculate;
 
+import com.alibaba.fastjson.JSON;
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
 import com.byt.tagcalculate.func.TagKafkaInfoToEventFunc;
@@ -37,6 +38,7 @@ public class Dws2IoTDB {
                     @Override
                     public void process(ProcessAllWindowFunction<Event, List<Event>, TimeWindow>.Context context, Iterable<Event> iterable, Collector<List<Event>> collector) throws Exception {
                         ArrayList<Event> list = Lists.newArrayList(iterable.iterator());
+                        System.out.println(JSON.toJSONString(list));
                         collector.collect(list);
                     }
                 });
