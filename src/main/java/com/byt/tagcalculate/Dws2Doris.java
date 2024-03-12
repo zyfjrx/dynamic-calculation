@@ -16,6 +16,11 @@ import org.apache.flink.util.OutputTag;
 
 import java.time.Duration;
 
+/**
+ * @title:
+ * @author: zhangyf
+ * @date: 2024/3/12 16:26
+ **/
 public class Dws2Doris {
     public static void main(String[] args) throws Exception {
         //TODO 1.获取执行环境

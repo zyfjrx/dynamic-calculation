@@ -11,6 +11,11 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @title:
+ * @author: zhangyf
+ * @date: 2024/3/17 16:26
+ **/
 public class IotDBSink extends RichSinkFunction<List<Event>> {
     private SessionPool pool;
 
