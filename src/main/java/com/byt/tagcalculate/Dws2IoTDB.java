@@ -19,7 +19,11 @@ import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * @title:
+ * @author: zhangyf
+ * @date: 2024/3/17 16:26
+ **/
 public class Dws2IoTDB {
     public static void main(String[] args) throws Exception {
         //TODO 1.获取执行环境
@@ -30,10 +34,10 @@ public class Dws2IoTDB {
         SingleOutputStreamOperator<List<Event>> mainDS = env
                 .addSource(MyKafkaUtil.getKafkaPojoConsumer(
                         parameterTool.get("kafka.dws.topic"),
-                        "20240000000",
+                        "202400000001",
                         parameterTool.get("kafka.server")))
                 .process(new TagKafkaInfoToEventFunc())
-                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(2L)))
+                .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new ProcessAllWindowFunction<Event, List<Event>, TimeWindow>() {
                     @Override
                     public void process(ProcessAllWindowFunction<Event, List<Event>, TimeWindow>.Context context, Iterable<Event> iterable, Collector<List<Event>> collector) throws Exception {
@@ -45,6 +49,5 @@ public class Dws2IoTDB {
         //mainDS.print();
         mainDS.addSink(new IotDBSink()).setParallelism(2);
         env.execute(Dws2IoTDB.class.getSimpleName());
-
     }
 }
