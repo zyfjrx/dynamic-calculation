@@ -3,7 +3,7 @@ package com.byt.tagcalculate;
 import com.alibaba.fastjson.JSON;
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
-import com.byt.tagcalculate.func.TagKafkaInfoToEventFunc;
+import com.byt.tagcalculate.func.TagKafkaInfoToEventFunc2;
 import com.byt.tagcalculate.pojo.Event;
 import com.byt.tagcalculate.sink.IotDBSink;
 import com.google.common.collect.Lists;
@@ -36,7 +36,7 @@ public class Dws2IoTDB {
                         parameterTool.get("kafka.dws.topic"),
                         "202400000001",
                         parameterTool.get("kafka.server")))
-                .process(new TagKafkaInfoToEventFunc())
+                .process(new TagKafkaInfoToEventFunc2())
                 .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new ProcessAllWindowFunction<Event, List<Event>, TimeWindow>() {
                     @Override
