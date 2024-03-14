@@ -88,7 +88,7 @@ public class AvgProcessFuncPlus extends ProcessWindowFunction<TagKafkaInfo, TagK
             aggregatingState.add(tagKafkaInfo);
         }
         TagKafkaInfo tagKafkaInfo = aggregatingState.get();
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo, context, out, dwdOutPutTag);
         aggregatingState.clear();
     }

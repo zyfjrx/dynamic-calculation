@@ -115,7 +115,7 @@ public class BytTagUtil {
                     continue;
                 }
                 try {
-                    bytTag.setTime(originTag.getTime());
+                    bytTag.setCalculateTime(originTag.getCalculateTime());
                     bytTag.setTopic(originTag.getTopic());
                     bytTag.setTimestamp(originTag.getTimestamp());
                 } catch (Exception e) {
@@ -129,7 +129,7 @@ public class BytTagUtil {
                     }
                     Integer normalState = getNormalState(max, min, originTag.getValue());
                     bytTag.setIsNormal(normalState);
-                    bytTag.setTime(originTag.getTime());
+                    bytTag.setCalculateTime(originTag.getCalculateTime());
                     bytTag.setTopic(originTag.getTopic());
                     bytTag.setValue(originTag.getValue());
                     bytTag.setTimestamp(originTag.getTimestamp());

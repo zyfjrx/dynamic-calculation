@@ -41,7 +41,7 @@ public class TagKafkaInfoToEventFunc extends ProcessFunction<TagKafkaInfo, Event
             measurements.add(tagKafkaInfo.getBytName());
             measurements.add("create_time");
             values.add(tagKafkaInfo.getValue().toString());
-            values.add(tagKafkaInfo.getTime());
+            values.add(tagKafkaInfo.getCalculateTime());
             Event event = new Event(device, tagKafkaInfo.getTimestamp(), measurements, types, values);
             collector.collect(event);
             values.clear();

@@ -28,7 +28,7 @@ public class PreProcessFunction extends ProcessWindowFunction<TagKafkaInfo, Topi
             TagKafkaProtos.TagKafkaInfo newTag = TagKafkaProtos.TagKafkaInfo.newBuilder()
                     .setName(tag.getBytName())
                     .setValue(tag.getValue().toString())
-                    .setTime(TimeUtil.reformat(tag.getTime()))
+                    .setTime(TimeUtil.reformat(tag.getCalculateTime()))
                     .build();
             lvOutBuild.add(Value.newBuilder().mergeFrom(newTag.toByteArray()).build());
 

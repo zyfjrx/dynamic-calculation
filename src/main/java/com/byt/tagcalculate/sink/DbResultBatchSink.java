@@ -66,7 +66,7 @@ public class DbResultBatchSink extends RichSinkFunction<List<TagKafkaInfo>> {
             ps.setString(1, tag.getBytName());
             ps.setString(2, tag.getTopic());
             ps.setBigDecimal(3, tag.getValue());
-            ps.setTimestamp(4, Timestamp.valueOf(tag.getTime()));
+            ps.setTimestamp(4, Timestamp.valueOf(tag.getCalculateTime()));
             ps.setString(5, tag.getCalculateType());
             ps.setString(6, tag.getCalculateParam());
             ps.setString(7, tag.getTaskName());

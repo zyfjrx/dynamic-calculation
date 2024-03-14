@@ -436,7 +436,7 @@ public class Dwd2DwsDynamicCalculationJobMySQL {
 
         // send to kafka(tag_pre)
         preResult
-                .keyBy(r -> r.getTime())
+                .keyBy(r -> r.getCalculateTime())
                 .window(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new PreProcessFunction())
                 .addSink(MyKafkaUtil.getProducerWithTopicData(parameterTool.get("kafka.server")))
@@ -464,7 +464,7 @@ public class Dwd2DwsDynamicCalculationJobMySQL {
                                         ps.setString(1, tag.getBytName());
                                         ps.setString(2, tag.getTopic());
                                         ps.setBigDecimal(3, tag.getValue());
-                                        ps.setTimestamp(4, Timestamp.valueOf(tag.getTime()));
+                                        ps.setTimestamp(4, Timestamp.valueOf(tag.getCalculateTime()));
                                         ps.setString(5, tag.getCalculateType());
                                         ps.setString(6, tag.getCalculateParam());
                                         ps.setString(7, tag.getTaskName());

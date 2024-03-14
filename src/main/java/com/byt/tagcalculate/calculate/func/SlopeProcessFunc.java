@@ -70,7 +70,7 @@ public class SlopeProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKaf
             tagKafkaInfo.setValue(null);
             System.out.println("SLOPE 计算异常～～～～");
         }
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         list.clear();
     }

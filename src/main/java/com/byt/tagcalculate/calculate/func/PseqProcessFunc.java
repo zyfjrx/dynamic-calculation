@@ -51,7 +51,7 @@ public class PseqProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafk
         }
         TagKafkaInfo tagKafkaInfo = elements.iterator().next();
         tagKafkaInfo.setValue(value);
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         arrayList.clear();
     }

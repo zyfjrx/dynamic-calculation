@@ -58,10 +58,10 @@ public class ProtoKafkaDeserialization implements KafkaDeserializationSchema<Lis
                 long tagTimestamp = sdf.parse(pTime).getTime();
                 if (Math.abs(kafkaTimestamp-tagTimestamp) > 10000L){
                     tagKafkaInfo.setTimestamp(kafkaTimestamp);
-                    tagKafkaInfo.setTime(BytTagUtil.reformat(kafkaTimestamp));
+                    tagKafkaInfo.setCalculateTime(BytTagUtil.reformat(kafkaTimestamp));
                 }else {
                     tagKafkaInfo.setTimestamp(tagTimestamp);
-                    tagKafkaInfo.setTime(BytTagUtil.formatTime(pTime));
+                    tagKafkaInfo.setCalculateTime(BytTagUtil.formatTime(pTime));
                 }
                 if (strValue.equalsIgnoreCase("true") || strValue.equalsIgnoreCase("false")) {
                     tagKafkaInfo.setStrValue(strValue);

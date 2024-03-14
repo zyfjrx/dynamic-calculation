@@ -67,7 +67,7 @@ public class AvgProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKafka
         BigDecimal avg = sumState.value().divide(numState.value(), 4, BigDecimal.ROUND_HALF_UP);
         TagKafkaInfo tagKafkaInfo = elements.iterator().next();
         tagKafkaInfo.setValue(avg);
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         sumState.clear();
         numState.clear();

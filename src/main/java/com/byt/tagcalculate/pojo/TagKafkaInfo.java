@@ -18,7 +18,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class TagKafkaInfo {
     private String name;
-    private String time;
+    private String calculateTime;
     private BigDecimal value;
     private String topic;
     private Integer tagType;
@@ -46,8 +46,8 @@ public class TagKafkaInfo {
     private Integer status; // 当前计算类型
 
     public Long getTimestamp() {
-        if (this.timestamp == null && this.time != null) {
-            timestamp = TimeUtil.getStartTime(this.time);
+        if (this.timestamp == null && this.calculateTime != null) {
+            timestamp = TimeUtil.getStartTime(this.calculateTime);
         }
         return timestamp;
     }
@@ -57,7 +57,7 @@ public class TagKafkaInfo {
         if (o == null || getClass() != o.getClass()) return false;
         TagKafkaInfo that = (TagKafkaInfo) o;
         return Objects.equals(name, that.name) &&
-                Objects.equals(time, that.time) &&
+                Objects.equals(calculateTime, that.calculateTime) &&
                 Objects.equals(value, that.value) &&
                 Objects.equals(topic, that.topic) &&
                 Objects.equals(bytName, that.bytName);
@@ -65,7 +65,7 @@ public class TagKafkaInfo {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, time, value, topic, bytName);
+        return Objects.hash(name, calculateTime, value, topic, bytName);
     }
 
     public String getName() {
@@ -76,12 +76,12 @@ public class TagKafkaInfo {
         this.name = name;
     }
 
-    public String getTime() {
-        return time;
+    public String getCalculateTime() {
+        return calculateTime;
     }
 
-    public void setTime(String time) {
-        this.time = time;
+    public void setCalculateTime(String calculateTime) {
+        this.calculateTime = calculateTime;
     }
 
     public BigDecimal getValue() {
@@ -277,7 +277,7 @@ public class TagKafkaInfo {
     public String toString() {
         return "TagKafkaInfo{" +
                 "name='" + name + '\'' +
-                ", time='" + time + '\'' +
+                ", calculateTime='" + calculateTime + '\'' +
                 ", value=" + value +
                 ", topic='" + topic + '\'' +
                 ", tagType=" + tagType +

@@ -521,7 +521,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
 
         // send to kafka(tag_pre)
         preResult
-                .keyBy(r -> r.getTime())
+                .keyBy(r -> r.getCalculateTime())
                 .window(TumblingProcessingTimeWindows.of(Time.seconds(1L)))
                 .process(new PreProcessFunction())
                 .addSink(MyKafkaUtil.getProducerWithTopicData(parameterTool.get("kafka.server")))

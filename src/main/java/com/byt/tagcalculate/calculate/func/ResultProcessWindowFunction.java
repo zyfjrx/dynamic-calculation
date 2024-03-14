@@ -31,7 +31,7 @@ public class ResultProcessWindowFunction extends ProcessWindowFunction<TagKafkaI
     @Override
     public void process(String key, ProcessWindowFunction<TagKafkaInfo, TagKafkaInfo, String, TimeWindow>.Context context, Iterable<TagKafkaInfo> iterable, Collector<TagKafkaInfo> collector) throws Exception {
         TagKafkaInfo tagKafkaInfo = iterable.iterator().next();
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo,context,collector,dwdOutPutTag);
     }
 }

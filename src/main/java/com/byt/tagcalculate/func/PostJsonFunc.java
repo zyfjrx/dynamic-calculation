@@ -62,13 +62,13 @@ public class PostJsonFunc extends
     public void processElement(Tuple2<String, TagKafkaInfo> data, KeyedBroadcastProcessFunction<String, Tuple2<String, TagKafkaInfo>, JSONObject, Tuple2<String, String>>.ReadOnlyContext readOnlyContext, Collector<Tuple2<String, String>> collector) throws Exception {
         String postName = data.f0;
         TagKafkaInfo tagKafkaInfo = data.f1;
-        String stateKay = tagKafkaInfo.getTime();
+        String stateKay = tagKafkaInfo.getCalculateTime();
         ReadOnlyBroadcastState<String, PostSetup> broadcastState = readOnlyContext.getBroadcastState(Descriptors.postMapDescriptor);
         PostSetup postSetup = broadcastState.get(postName);
         addToJsonState(jsonState, stateKay, tagKafkaInfo.getBytName(), tagKafkaInfo.getValue());
         if (jsonState.get(stateKay) != null && (jsonState.get(stateKay).size() == postSetup.getPostKeys().size())) {
             HashMap<String, String> map = jsonState.get(stateKay);
-            map.put("create_time",tagKafkaInfo.getTime());
+            map.put("create_time",tagKafkaInfo.getCalculateTime());
             collector.collect(Tuple2.of(postSetup.getPostUrl(), JSON.toJSONString(map)));
             jsonState.remove(stateKay);
         }

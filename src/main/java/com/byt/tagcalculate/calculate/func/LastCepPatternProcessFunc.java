@@ -36,7 +36,7 @@ public class LastCepPatternProcessFunc extends PatternProcessFunction<TagKafkaIn
 //        TagKafkaInfo newTag = new TagKafkaInfo();
 //        BeanUtils.copyProperties(newTag, second);
 //        newTag.setValue(first.getValue());
-        first.setTime(second.getTime());
+        first.setCalculateTime(second.getCalculateTime());
         BytTagUtil.outputByKeyed(first, context, collector, dwdOutPutTag);
     }
 }

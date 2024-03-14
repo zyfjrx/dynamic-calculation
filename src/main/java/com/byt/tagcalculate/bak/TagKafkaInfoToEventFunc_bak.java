@@ -1,4 +1,4 @@
-package com.byt.tagcalculate.func;
+package com.byt.tagcalculate.bak;
 
 import com.byt.tagcalculate.pojo.Event;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
@@ -49,7 +49,7 @@ public class TagKafkaInfoToEventFunc_bak extends ProcessFunction<TagKafkaInfo, E
             values.add(tagKafkaInfo.getValue().toString());
             values.add(tagKafkaInfo.getCalculateType());
             values.add(tagKafkaInfo.getCalculateParam());
-            values.add(tagKafkaInfo.getTime());
+            values.add(tagKafkaInfo.getCalculateTime());
             Event event = new Event(device, tagKafkaInfo.getTimestamp(), measurements, types, values);
             collector.collect(event);
             values.clear();

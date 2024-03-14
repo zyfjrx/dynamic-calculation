@@ -57,7 +57,7 @@ public class VarianceProcessFunc extends ProcessWindowFunction<TagKafkaInfo, Tag
             System.out.println("CV 计算异常～～～～");
             tagKafkaInfo.setValue(null);
         }
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         list.clear();
     }

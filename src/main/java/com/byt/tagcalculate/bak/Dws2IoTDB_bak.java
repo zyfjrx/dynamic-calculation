@@ -2,7 +2,6 @@ package com.byt.tagcalculate.bak;
 
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
-import com.byt.tagcalculate.func.TagKafkaInfoToEventFunc_bak;
 import com.byt.tagcalculate.pojo.Event;
 import com.byt.tagcalculate.sink.IotDBSink;
 import com.google.common.collect.Lists;

@@ -31,7 +31,7 @@ public class IotDBFunc extends ProcessFunction<List<TagKafkaInfo>, Map<String,St
                     tagKafkaInfo.getBytName()+separator+
                     tagKafkaInfo.getTopic()+separator+
                             tagKafkaInfo.getValue()+separator+
-                            tagKafkaInfo.getTime()+separator+
+                            tagKafkaInfo.getCalculateTime()+separator+
                             tagKafkaInfo.getCalculateType()+separator+
                             tagKafkaInfo.getCalculateParam()+separator+
                             tagKafkaInfo.getTaskName()+separator+

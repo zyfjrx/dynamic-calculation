@@ -2,7 +2,6 @@ package com.byt.tagcalculate.calculate.func;
 
 import com.byt.common.utils.BytTagUtil;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -13,7 +12,6 @@ import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
-import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -61,7 +59,7 @@ public class LastProcessFunc extends KeyedProcessFunction<String, TagKafkaInfo, 
             BeanUtils.copyProperties(newTag, value);
             newTag.setValue(tagKafkaInfoValue);*/
             assert tagKafkaInfo != null;
-            tagKafkaInfo.setTime(value.getTime());
+            tagKafkaInfo.setCalculateTime(value.getCalculateTime());
             BytTagUtil.outputByKeyed(tagKafkaInfo,ctx,out,dwdOutPutTag);
         }
     }

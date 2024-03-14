@@ -56,7 +56,7 @@ public class MedianProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKa
             median = arrayList.get((arrayList.size() + 1) / 2 - 1).getValue();
         }
         TagKafkaInfo tagKafkaInfo = arrayList.get(arrayList.size() - 1);
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         tagKafkaInfo.setValue(median);
         BytTagUtil.outputByWindow(tagKafkaInfo,context,out,dwdOutPutTag);
         arrayList.clear();

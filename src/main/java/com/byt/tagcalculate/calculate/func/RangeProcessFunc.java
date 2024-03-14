@@ -49,7 +49,7 @@ public class RangeProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKaf
         BigDecimal value = arrayList.get(arrayList.size() - 1).subtract(arrayList.get(0));
         TagKafkaInfo tagKafkaInfo = elements.iterator().next();
         tagKafkaInfo.setValue(value);
-        tagKafkaInfo.setTime(sdf.format(context.window().getEnd()));
+        tagKafkaInfo.setCalculateTime(sdf.format(context.window().getEnd()));
         BytTagUtil.outputByWindow(tagKafkaInfo, context, out, dwdOutPutTag);
         arrayList.clear();
     }
