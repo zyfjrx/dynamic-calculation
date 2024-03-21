@@ -45,4 +45,19 @@ public class TimeUtil {
         return s1;
     }
 
+    public static String reformat2(String s) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");//可以方便地修改日期格式
+        String s1 = "";
+        try {
+            long st = dateFormat.parse(s).getTime();
+            SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
+            sdf.applyPattern("yyyy-MM-dd HH:mm:ss");// a为am/pm的标记
+            s1 = sdf.format(st);
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return s1;
+    }
+
 }

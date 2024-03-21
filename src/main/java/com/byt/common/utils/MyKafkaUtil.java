@@ -1,10 +1,13 @@
 package com.byt.common.utils;
 
+import com.byt.common.deserialization.OdsProtoKafkaDeserialization;
 import com.byt.common.deserialization.ProtoKafkaDeserialization;
 import com.byt.common.deserialization.TagInfoDeserializationSchema;
 import com.byt.common.deserialization.TopicDataDeserialization;
+import com.byt.tagcalculate.pojo.OdsTag;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TopicData;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
@@ -50,6 +53,20 @@ public class MyKafkaUtil {
     }
 
 
+
+    public static FlinkKafkaConsumer<List<OdsTag>> getKafkaListConsumer2(List<String> topic, String groupId, String server) {
+        Properties properties = new Properties();
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
+        FlinkKafkaConsumer<List<OdsTag>> kafkaConsumer = new FlinkKafkaConsumer<List<OdsTag>>(
+                topic,
+                new OdsProtoKafkaDeserialization(),
+                properties
+        );
+        return kafkaConsumer;
+    }
+
+
     /**
      * 消费kafka数据转化为pojo类 Watermark
      *
@@ -64,6 +81,18 @@ public class MyKafkaUtil {
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
                 topic,
                 new TagInfoDeserializationSchema(),
+                properties
+        );
+        return kafkaConsumer;
+    }
+
+    public static FlinkKafkaConsumer<String> getKafkaStringConsumer(String topic, String groupId,String server) {
+        Properties properties = new Properties();
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
+        FlinkKafkaConsumer<String> kafkaConsumer = new FlinkKafkaConsumer<>(
+                topic,
+                new SimpleStringSchema(),
                 properties
         );
         return kafkaConsumer;
