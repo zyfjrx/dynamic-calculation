@@ -1,11 +1,9 @@
 package com.byt.tagcalculate.func;
 
-import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import com.byt.tagcalculate.pojo.TopicData;
 import com.byt.common.protos.TagKafkaProtos;
 import com.byt.common.utils.TimeUtil;
-import com.google.protobuf.ListValue;
-import com.google.protobuf.Value;
+import com.byt.tagcalculate.pojo.TagKafkaInfo;
+import com.byt.tagcalculate.pojo.TopicData;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
@@ -21,7 +19,7 @@ import java.util.Iterator;
 public class PreProcessFunction extends ProcessWindowFunction<TagKafkaInfo, TopicData,String, TimeWindow> {
     @Override
     public void process(String s, ProcessWindowFunction<TagKafkaInfo, TopicData, String, TimeWindow>.Context context, Iterable<TagKafkaInfo> elements, Collector<TopicData> out) throws Exception {
-        ArrayList<Value> lvOutBuild = new ArrayList<>();
+        ArrayList<com.google.protobuf.Value> lvOutBuild = new ArrayList<>();
         Iterator<TagKafkaInfo> iterator = elements.iterator();
         while (iterator.hasNext()) {
             TagKafkaInfo tag = iterator.next();
@@ -30,10 +28,10 @@ public class PreProcessFunction extends ProcessWindowFunction<TagKafkaInfo, Topi
                     .setValue(tag.getValue().toString())
                     .setTime(TimeUtil.reformat(tag.getCalculateTime()))
                     .build();
-            lvOutBuild.add(Value.newBuilder().mergeFrom(newTag.toByteArray()).build());
+            lvOutBuild.add(com.google.protobuf.Value.newBuilder().mergeFrom(newTag.toByteArray()).build());
 
         }
-        ListValue lvOut = ListValue.newBuilder()
+        com.google.protobuf.ListValue lvOut = com.google.protobuf.ListValue.newBuilder()
                 .addAllValues(lvOutBuild)
                 .build();
 
