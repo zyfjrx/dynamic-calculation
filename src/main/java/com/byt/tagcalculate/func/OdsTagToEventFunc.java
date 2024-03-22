@@ -25,7 +25,8 @@ public class OdsTagToEventFunc extends ProcessFunction<OdsTag, Event> {
     public void open(Configuration parameters) throws Exception {
         measurements = new ArrayList<>(1);
         types = Arrays.asList(
-                TSDataType.TEXT
+                TSDataType.DOUBLE
+                //TSDataType.TEXT
 
         );
         values = new ArrayList<>(1);
@@ -39,9 +40,11 @@ public class OdsTagToEventFunc extends ProcessFunction<OdsTag, Event> {
     @Override
     public void processElement(OdsTag odsTag, ProcessFunction<OdsTag, Event>.Context context, Collector<Event> collector) throws Exception {
         try {
-            String device = "root." + parameterTool.get("iotdb.devicePrefix") + ".ods" + "." + odsTag.getTagName();
-            measurements.add("value");
-            values.add(odsTag.getValue().toString());
+            String device = "root." + parameterTool.get("iotdb.devicePrefix") + ".line"+parameterTool.get("iotdb.lineId")+"."+parameterTool.get("iotdb.dataLevel");
+            measurements.add(odsTag.getTagName());
+            //measurements.add("create_time");
+            values.add(odsTag.getValue());
+            //values.add(odsTag.getTime());
             Event event = new Event(device, TimeUtil.getStartTime(odsTag.getTime()), measurements, types, values);
             collector.collect(event);
             values.clear();
