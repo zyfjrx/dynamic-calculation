@@ -66,15 +66,15 @@ public class OdsProtoKafkaDeserialization implements KafkaDeserializationSchema<
                 if (pValue.equalsIgnoreCase("true") || pValue.equalsIgnoreCase("false")) {
                     //OdsTag.setValue(strValue);
                     if (strValue.equalsIgnoreCase("true")) {
-                        OdsTag.setValue(BigDecimal.ONE);
+                        OdsTag.setValue(Double.valueOf(1));
                     } else {
-                        OdsTag.setValue(BigDecimal.ZERO);
+                        OdsTag.setValue(Double.valueOf(0));
                     }
                     kafkaInfos.add(OdsTag);
                 } else {
                     // 保留4位小数
                     BigDecimal v = new BigDecimal(kafkaInfoProtos.getValue()).setScale(4, BigDecimal.ROUND_HALF_UP);
-                    OdsTag.setValue(v);
+                    OdsTag.setValue(Double.valueOf(v.toString()));
                     kafkaInfos.add(OdsTag);
                 }
             } catch (Exception e) {

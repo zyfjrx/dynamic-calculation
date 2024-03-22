@@ -24,7 +24,7 @@ public class TagKafkaInfoToEventFunc2 extends ProcessFunction<TagKafkaInfo, Even
     public void open(Configuration parameters) throws Exception {
         measurements = new ArrayList<>(2);
         types = Arrays.asList(
-                TSDataType.TEXT,
+                TSDataType.DOUBLE,
                 TSDataType.TEXT
         );
         values = new ArrayList<>(2);
@@ -40,7 +40,7 @@ public class TagKafkaInfoToEventFunc2 extends ProcessFunction<TagKafkaInfo, Even
             String device = "root." + parameterTool.get("iotdb.devicePrefix") + ".line" + tagKafkaInfo.getLineId() + "." + tagKafkaInfo.getTaskName();
             measurements.add(tagKafkaInfo.getBytName());
             measurements.add("create_time");
-            values.add(tagKafkaInfo.getValue().toString());
+            values.add(Double.parseDouble(tagKafkaInfo.getValue().toString()));
             values.add(tagKafkaInfo.getCalculateTime());
             Event event = new Event(device, tagKafkaInfo.getTimestamp(), measurements, types, values);
             collector.collect(event);

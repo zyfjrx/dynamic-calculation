@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * @title:
  * @author: zhangyf
@@ -19,5 +17,5 @@ public class OdsTag {
     private String time;
     private String topic;
     private String strValue;
-    private BigDecimal value;
+    private Double value;
 }
