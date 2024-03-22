@@ -30,9 +30,9 @@ import java.util.List;
 
 
 /**
- * @title: 读取原始数据补充相关计算字段到DWD层
+ * @title: 读取kafka原始probuf协议数据转换为json数据
  * @author: zhangyf
- * @date: 2023/7/6 10:25
+ * @date: 2024/03/22 10:25
  */
 public class Ods2JsonOds {
     public static void main(String[] args) throws Exception {

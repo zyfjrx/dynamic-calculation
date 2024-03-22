@@ -17,9 +17,9 @@ import java.util.List;
 
 
 /**
- * @title: 读取原始数据补充相关计算字段到DWD层
+ * @title: 读取kafka原始数据到IoTDB --->ODS层
  * @author: zhangyf
- * @date: 2023/7/6 10:25
+ * @date: 2024/03/22 10:25
  */
 public class Ods2Doris {
     public static void main(String[] args) throws Exception {
