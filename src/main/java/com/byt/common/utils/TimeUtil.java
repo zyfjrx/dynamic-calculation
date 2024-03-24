@@ -30,6 +30,17 @@ public class TimeUtil {
         return st;
     }
 
+    public static long getStartTimeStamp(String s) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");//可以方便地修改日期格式
+        long st = 0;
+        try {
+            st = dateFormat.parse(s).getTime();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return st;
+    }
+
     public static String reformat(String s) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//可以方便地修改日期格式
         String s1 = "";

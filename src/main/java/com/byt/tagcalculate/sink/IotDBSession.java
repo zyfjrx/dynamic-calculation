@@ -13,6 +13,7 @@ import java.util.List;
 public class IotDBSession {
     public static SessionPool getSession(String host,int port,String user,String pwd,int poolSize) {
         SessionPool session = new SessionPool(host, port, user, pwd, poolSize);
+        session.setFetchSize(10000);
         return session;
     }
 
