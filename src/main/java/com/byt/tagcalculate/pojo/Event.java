@@ -1,9 +1,13 @@
 package com.byt.tagcalculate.pojo;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
 import java.util.List;
 
+@Data
+@NoArgsConstructor
 public class Event {
     private String device;
     private Long timestamp;

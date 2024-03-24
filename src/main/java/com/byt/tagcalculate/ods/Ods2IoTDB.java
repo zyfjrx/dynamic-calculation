@@ -4,6 +4,7 @@ import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
 import com.byt.common.utils.TimeUtil;
 import com.byt.tagcalculate.func.BeanToJsonStrFunction;
+import com.byt.tagcalculate.func.Ods2IoTDBFunc;
 import com.byt.tagcalculate.pojo.OdsTag;
 import com.byt.tagcalculate.pojo.OdsTags;
 import com.byt.tagcalculate.sink.IotDBSink3;
@@ -40,7 +41,8 @@ public class Ods2IoTDB {
                                         "test1_20240c324",
                                         parameterTool.get("kafka.server")
                                 ))
-                .process(new ProcessFunction<List<OdsTag>, OdsTags>() {
+                        .process(new Ods2IoTDBFunc());
+              /*  .process(new ProcessFunction<List<OdsTag>, OdsTags>() {
                     @Override
                     public void processElement(List<OdsTag> odsTagList, ProcessFunction<List<OdsTag>, OdsTags>.Context context, Collector<OdsTags> collector) throws Exception {
                         OdsTags odsTags = new OdsTags();
@@ -67,7 +69,7 @@ public class Ods2IoTDB {
                         collector.collect(odsTags);
                     }
                 })
-                ;
+                ;*/
         kafkaDS.map(new BeanToJsonStrFunction<>()).print();
 
        kafkaDS.addSink(new IotDBSink3());
