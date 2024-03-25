@@ -1,12 +1,7 @@
 package com.byt.common.utils;
 
-import com.byt.common.deserialization.OdsProtoKafkaDeserialization;
-import com.byt.common.deserialization.ProtoKafkaDeserialization;
-import com.byt.common.deserialization.TagInfoDeserializationSchema;
-import com.byt.common.deserialization.TopicDataDeserialization;
-import com.byt.tagcalculate.pojo.OdsTag;
-import com.byt.tagcalculate.pojo.TagKafkaInfo;
-import com.byt.tagcalculate.pojo.TopicData;
+import com.byt.common.deserialization.*;
+import com.byt.tagcalculate.pojo.*;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
@@ -54,7 +49,7 @@ public class MyKafkaUtil {
 
 
 
-    public static FlinkKafkaConsumer<List<OdsTag>> getKafkaListConsumer2(List<String> topic, String groupId, String server) {
+    public static FlinkKafkaConsumer<List<OdsTag>> getKafkaOdsListConsumer(List<String> topic, String groupId, String server) {
         Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
@@ -81,6 +76,18 @@ public class MyKafkaUtil {
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
                 topic,
                 new TagInfoDeserializationSchema(),
+                properties
+        );
+        return kafkaConsumer;
+    }
+
+    public static FlinkKafkaConsumer<Event> getKafkaEventTagsConsumer(List<String> topic, String groupId, String server) {
+        Properties properties = new Properties();
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
+        FlinkKafkaConsumer<Event> kafkaConsumer = new FlinkKafkaConsumer<>(
+                topic,
+                new EventProtoKafkaDeserialization(),
                 properties
         );
         return kafkaConsumer;
