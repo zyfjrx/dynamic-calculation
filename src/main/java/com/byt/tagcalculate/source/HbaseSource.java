@@ -6,12 +6,13 @@ import com.byt.tagcalculate.pojo.OdsTag;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -28,23 +29,21 @@ public class HbaseSource extends RichSourceFunction<OdsTag> {
     public void open(Configuration parameters) throws Exception {
         org.apache.hadoop.conf.Configuration hconf = HBaseConfiguration.create();
         hconf.set("hbase.zookeeper.quorum", "ai1:2181,ai2:2181,ai3:2181");
-        //hconf.set("zookeeper.znode.parent", "/hbase");
         connection = ConnectionFactory.createConnection(hconf);
     }
 
     @Override
     public void run(SourceContext<OdsTag> sourceContext) throws Exception {
-        table = connection.getTable(TableName.valueOf("default:ods_data_024001"));
+        table = connection.getTable(TableName.valueOf("default:ods_data_1"));
         Scan scan = new Scan();
-        scan.addFamily(Bytes.toBytes("info"));
+        scan.addColumn(Bytes.toBytes("info"),Bytes.toBytes("value"));
         rs = table.getScanner(scan);
-
         for (Result result : rs) {
             OdsTag odsTag = new OdsTag();
             StringBuilder sb = new StringBuilder();
             List<Cell> cells = result.listCells();
             for (Cell cell : cells) {
-                String value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+                String value = Bytes.toString(CellUtil.cloneValue(cell));
                 sb.append(value);
             }
             String roeKey = new String(result.getRow());
@@ -52,8 +51,14 @@ public class HbaseSource extends RichSourceFunction<OdsTag> {
             String time = roeKey.substring(roeKey.length() - 14, roeKey.length());
             odsTag.setTime(TimeUtil.reformat2(time));
             odsTag.setTagName(tag);
-            odsTag.setValue(new BigDecimal(sb.toString()));
-            sourceContext.collect(odsTag);
+            try {
+                odsTag.setValue(Double.parseDouble(sb.toString()));
+                sourceContext.collect(odsTag);
+            }catch (Exception e){
+                System.out.println(roeKey+"----->"+sb);
+                e.printStackTrace();
+            }
+
         }
 
     }
