@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OdsTags {
+public class OdsTagRecord {
     private List<List<String>> tagNames;
     private List<String> deviceIds;
     private String time;

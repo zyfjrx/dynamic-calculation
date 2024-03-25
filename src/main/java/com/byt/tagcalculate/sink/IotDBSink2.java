@@ -30,17 +30,17 @@ public class IotDBSink2 extends RichSinkFunction<Event> {
                 parameterTool.get("iotdb.password"),
                 parameterTool.getInt("iotdb.poolSize")
         );
-        device = "root.hkll.line3.ods";
+        device = "root." + parameterTool.get("iotdb.devicePrefix") + ".line"+parameterTool.get("iotdb.lineId")+"."+parameterTool.get("iotdb.dataLevel");
     }
 
 
     @Override
-    public void invoke(Event event, Context context) throws Exception {
+    public void invoke(Event odsEvent, Context context) throws Exception {
         try {
             long start = System.currentTimeMillis();
-            pool.insertRecord(device, event.getTimestamp(), event.getMeasurements(), event.getTypes(), event.getValues());
+            pool.insertRecord(device, odsEvent.getTimestamp(), odsEvent.getMeasurements(), odsEvent.getTypes(), odsEvent.getValues());
             long end = System.currentTimeMillis();
-            System.out.println(String.format("duration[%s]ms", (end - start))+"----> insert:"+event.getValues().size());
+            System.out.println(String.format("duration[%s]ms", (end - start))+"----> insert:"+odsEvent.getValues().size());
         } catch (Exception e) {
             e.printStackTrace();
         }

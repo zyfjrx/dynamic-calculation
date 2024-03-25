@@ -2,7 +2,7 @@ package com.byt.tagcalculate.func;
 
 import com.byt.common.utils.TimeUtil;
 import com.byt.tagcalculate.pojo.OdsTag;
-import com.byt.tagcalculate.pojo.OdsTags;
+import com.byt.tagcalculate.pojo.OdsTagRecord;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
@@ -17,7 +17,7 @@ import java.util.List;
  * @author: zhangyf
  * @date: 2024/3/24 15:11
  **/
-public class Ods2IoTDBFunc extends ProcessFunction<List<OdsTag>, OdsTags> {
+public class Ods2IoTDBFunc extends ProcessFunction<List<OdsTag>, OdsTagRecord> {
     private List<Long> timestamps;
     private List<List<String>> measurementsList;
     private List<List<TSDataType>> typesList;
@@ -31,9 +31,9 @@ public class Ods2IoTDBFunc extends ProcessFunction<List<OdsTag>, OdsTags> {
     }
 
     @Override
-    public void processElement(List<OdsTag> odsTagList, ProcessFunction<List<OdsTag>, OdsTags>.Context context, Collector<OdsTags> collector) throws Exception {
+    public void processElement(List<OdsTag> odsTagList, ProcessFunction<List<OdsTag>, OdsTagRecord>.Context context, Collector<OdsTagRecord> collector) throws Exception {
 
-        OdsTags odsTags = new OdsTags();
+        OdsTagRecord odsTagRecord = new OdsTagRecord();
         for (OdsTag odsTag : odsTagList) {
             if (odsTag.getTagName().contains("/")) {
                 String tagName = odsTag.getTagName();
@@ -46,11 +46,11 @@ public class Ods2IoTDBFunc extends ProcessFunction<List<OdsTag>, OdsTags> {
             typesList.add(Collections.singletonList(TSDataType.DOUBLE));
             timestamps.add(TimeUtil.getStartTime(odsTag.getTime()));
         }
-        odsTags.setTagNames(measurementsList);
-        odsTags.setTimestamps(timestamps);
-        odsTags.setValues(valuesList);
-        odsTags.setTypes(typesList);
-        collector.collect(odsTags);
+        odsTagRecord.setTagNames(measurementsList);
+        odsTagRecord.setTimestamps(timestamps);
+        odsTagRecord.setValues(valuesList);
+        odsTagRecord.setTypes(typesList);
+        collector.collect(odsTagRecord);
         timestamps.clear();
         measurementsList.clear();
         valuesList.clear();

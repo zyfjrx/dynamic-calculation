@@ -1,7 +1,7 @@
 package com.byt.tagcalculate.sink;
 
 
-import com.byt.tagcalculate.pojo.OdsTags;
+import com.byt.tagcalculate.pojo.OdsTagRecord;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -12,10 +12,11 @@ import org.apache.iotdb.session.pool.SessionPool;
  * @author: zhangyf
  * @date: 2024/3/17 16:26
  **/
-public class IotDBSink3 extends RichSinkFunction<OdsTags> {
+public class IotDBSink3 extends RichSinkFunction<OdsTagRecord> {
     private SessionPool pool;
 
     private ParameterTool parameterTool;
+    private String device;
 
 
     @Override
@@ -29,22 +30,24 @@ public class IotDBSink3 extends RichSinkFunction<OdsTags> {
                 parameterTool.get("iotdb.password"),
                 parameterTool.getInt("iotdb.poolSize")
         );
+        device = "root." + parameterTool.get("iotdb.devicePrefix") + ".line"+parameterTool.get("iotdb.lineId")+"."+parameterTool.get("iotdb.dataLevel");
+
     }
 
 
     @Override
-    public void invoke(OdsTags odsTags, Context context) throws Exception {
+    public void invoke(OdsTagRecord odsTagRecord, Context context) throws Exception {
         try {
             long start = System.currentTimeMillis();
             pool.insertRecordsOfOneDevice(
-                    "root.hkll.line3.ods",
-                    odsTags.getTimestamps(),
-                    odsTags.getTagNames(),
-                    odsTags.getTypes(),
-                    odsTags.getValues()
+                    device,
+                    odsTagRecord.getTimestamps(),
+                    odsTagRecord.getTagNames(),
+                    odsTagRecord.getTypes(),
+                    odsTagRecord.getValues()
             );
             long end = System.currentTimeMillis();
-            System.out.println(String.format("duration[%s]ms", (end - start)) + "----> insert:" + odsTags.getTagNames().size());
+            System.out.println(String.format("duration[%s]ms", (end - start)) + "----> insert:" + odsTagRecord.getTagNames().size());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -2,26 +2,14 @@ package com.byt.tagcalculate.ods;
 
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
-import com.byt.common.utils.TimeUtil;
 import com.byt.tagcalculate.func.BeanToJsonStrFunction;
 import com.byt.tagcalculate.pojo.Event;
-import com.byt.tagcalculate.pojo.OdsTag;
-import com.byt.tagcalculate.pojo.OdsTags;
 import com.byt.tagcalculate.sink.IotDBSink2;
-import com.byt.tagcalculate.sink.IotDBSink3;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.ProcessFunction;
-import org.apache.flink.util.Collector;
-import org.apache.flink.util.OutputTag;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 
 /**
