@@ -53,7 +53,7 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
             if (tagProperties != null){
                 bytInfoCache.put(key, tagProperties);
             }
-            System.out.println(tagProperties);
+            //System.out.println(tagProperties);
         }
         // 主流数据先到等待配置3s
         if (bytInfoCache.keySet().size() == 0) {
@@ -83,7 +83,8 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         if (after != null) {
             after.setOp(op);
             String key = after.byt_name + after.task_name;
-            if ((op.equals("r") || op.equals("c") )&& after.status == 1) {
+            //if ((op.equals("r") || op.equals("c") )&& after.status == 1) {
+            if (op.equals("r") || op.equals("c")) {
                 keys.add(key);
                 if (after.tag_name.contains(parameterTool.get("formula.tag.start")) &&
                         after.tag_name.contains(parameterTool.get("formula.tag.end"))) {

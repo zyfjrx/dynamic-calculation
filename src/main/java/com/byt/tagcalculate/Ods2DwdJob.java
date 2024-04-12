@@ -105,7 +105,7 @@ public class Ods2DwdJob {
         resultDS.addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dwd.topic"), parameterTool.get("kafka.server")))
                 .name("sink to kafka");
 
-        resultDS.print();
+        //resultDS.print();
         // 启动job
         env.execute("dwd_dynamic_job");
     }

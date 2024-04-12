@@ -35,9 +35,11 @@ create table dws_tag_second
     line_id          int          null
 );
 
--- 索引
-CREATE INDEX index_create_time ON dws_tag_second (calculate_time)
 
+-- 索引
+CREATE INDEX index_create_time ON dws_tag_second (calculate_time);
+CREATE INDEX index_create_time ON dws_tag_today (calculate_time);
+CREATE INDEX index_create_time ON dws_tag_result (calculate_time);
 
 create table tag_conf
 (

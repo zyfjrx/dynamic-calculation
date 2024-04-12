@@ -33,10 +33,10 @@ public class Ods2IoTDB {
                                         "test1_20240c324",
                                         parameterTool.get("kafka.server")
                                 ))
-                        .process(new Ods2IoTDBFunc());
-        kafkaDS.map(new BeanToJsonStrFunction<>()).print();
+                .process(new Ods2IoTDBFunc());
+        //kafkaDS.map(new BeanToJsonStrFunction<>()).print();
 
-       kafkaDS.addSink(new IotDBSink3());
+        kafkaDS.addSink(new IotDBSink3());
         env.execute(Ods2IoTDB.class.getSimpleName());
     }
 }

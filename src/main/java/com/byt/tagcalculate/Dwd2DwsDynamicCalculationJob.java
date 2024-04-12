@@ -478,7 +478,7 @@ public class Dwd2DwsDynamicCalculationJob {
                 .addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dws.topic"),parameterTool.get("kafka.server")))
                 .name("dws-sink");
 
-        dwsResult.print("dws<<<");
+        //dwsResult.print("dws<<<");
 
         // 划分分钟级别数据、秒级别数据和中间算子数据
         SingleOutputStreamOperator<TagKafkaInfo> minuteResult = dwsResult

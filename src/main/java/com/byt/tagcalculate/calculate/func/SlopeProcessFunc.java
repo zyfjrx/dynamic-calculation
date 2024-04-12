@@ -55,7 +55,7 @@ public class SlopeProcessFunc extends ProcessWindowFunction<TagKafkaInfo, TagKaf
             BigDecimal num_y = new BigDecimal(list.size());
             BigDecimal avg_y = sum_y.divide(num_y, 4, BigDecimal.ROUND_HALF_UP);
             BigDecimal avg_x = new BigDecimal(list.size() + 1L).divide(new BigDecimal(2), 4, BigDecimal.ROUND_HALF_UP);
-            System.out.println(list.size() + "------" + avg_x);
+            //System.out.println(list.size() + "------" + avg_x);
             BigDecimal dividend = BigDecimal.ZERO;
             BigDecimal divisor = BigDecimal.ZERO;
             for (int i = 0; i < list.size(); i++) {
