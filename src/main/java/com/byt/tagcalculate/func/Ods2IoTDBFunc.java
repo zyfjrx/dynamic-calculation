@@ -22,6 +22,7 @@ public class Ods2IoTDBFunc extends ProcessFunction<List<OdsTag>, OdsTagRecord> {
     private List<List<String>> measurementsList;
     private List<List<TSDataType>> typesList;
     private List<List<Object>> valuesList;
+
     @Override
     public void open(Configuration parameters) throws Exception {
         timestamps = new ArrayList<>();
@@ -35,14 +36,14 @@ public class Ods2IoTDBFunc extends ProcessFunction<List<OdsTag>, OdsTagRecord> {
 
         OdsTagRecord odsTagRecord = new OdsTagRecord();
         for (OdsTag odsTag : odsTagList) {
-            if (odsTag.getTagName().contains("/")) {
-                String tagName = odsTag.getTagName();
-                String newName = tagName.replace("/", "_");
-                measurementsList.add(Collections.singletonList(newName));
-            }else {
-                measurementsList.add(Collections.singletonList(odsTag.getTagName()));
-            }
+
+            String tagName = odsTag.getTagName();
+            //String newName = tagName.replaceAll("[/:.]", "_");
+            String newName = "`"+tagName+"`";
+            measurementsList.add(Collections.singletonList(newName));
+
             valuesList.add(Collections.singletonList(odsTag.getValue()));
+            System.out.println(odsTag);
             typesList.add(Collections.singletonList(TSDataType.DOUBLE));
             timestamps.add(TimeUtil.getStartTime(odsTag.getTime()));
         }
