@@ -1,11 +1,14 @@
 package com.byt.common.utils;
 
+import com.byt.tagcalculate.pojo.TagProperties;
+import com.google.common.base.CaseFormat;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.dbcp2.BasicDataSource;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JdbcUtil {
     private static BasicDataSource dataSource = new BasicDataSource();
@@ -85,5 +88,58 @@ public class JdbcUtil {
             }
         }
     }
+
+
+
+    public static <T> List<T> queryList(Connection connection, String sql, Class<T> clz, boolean isUnderScoreToCamel) throws SQLException, InstantiationException, IllegalAccessException, InvocationTargetException {
+
+        ArrayList<T> list = new ArrayList<>();
+
+        //查询
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columnCount = metaData.getColumnCount();
+
+        //遍历封装T对象放入集合  行遍历
+        while (resultSet.next()) {
+
+            //创建T对象
+            T t = clz.newInstance();
+
+            for (int i = 1; i < columnCount + 1; i++) {   //列遍历
+                String columnName = metaData.getColumnName(i);
+                Object value = resultSet.getObject(i);
+                if (isUnderScoreToCamel) {
+                    columnName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnName.toLowerCase());
+                }
+                //给T对象属性赋值
+                BeanUtils.setProperty(t, columnName, value);
+            }
+            //将T对象放入集合
+            list.add(t);
+        }
+
+        //释放资源
+        resultSet.close();
+        preparedStatement.close();
+
+        return list;
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Connection connection = DriverManager.getConnection("jdbc:mysql://ai3:3306?useSSL=false", "root", "rootroot");
+
+        List<TagProperties> queryList = queryList(connection, "select * from `byt_grid_data`.tag_conf", TagProperties.class, false);
+        for (TagProperties jsonObject : queryList) {
+            System.out.println(jsonObject);
+        }
+
+        connection.close();
+
+    }
+
+
 
 }

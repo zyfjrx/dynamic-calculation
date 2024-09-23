@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.byt.common.cdc.FlinkCDC;
 import com.byt.common.utils.EnvironmentUtils;
 import com.byt.common.utils.MyKafkaUtil;
-import com.byt.tagcalculate.func.BroadcastProcessFunc;
+import com.byt.tagcalculate.func.BroadcastProcessFuncPlus;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -72,7 +72,7 @@ public class Ods2DwdJob {
                         parameterTool.get("mysql.username"),
                         parameterTool.get("mysql.password"),
                         parameterTool.get("mysql.database"),
-                        parameterTool.get("mysql.table")
+                        parameterTool.get("mysql.table").split(",")
                 ), WatermarkStrategy.noWatermarks(), "mysql")
                 .broadcast(mapStateDescriptor);// 定义广播状态,将配置流进行广播
 
@@ -87,7 +87,7 @@ public class Ods2DwdJob {
         // 连接两个流 connect()
         SingleOutputStreamOperator<String> resultDS = kafkaDS
                 .connect(mysqlDS)
-                .process(new BroadcastProcessFunc(mapStateDescriptor))
+                .process(new BroadcastProcessFuncPlus(mapStateDescriptor))
                 .flatMap(new FlatMapFunction<List<TagKafkaInfo>, String>() {
                     @Override
                     public void flatMap(List<TagKafkaInfo> tagKafkaInfos, Collector<String> collector) throws Exception {

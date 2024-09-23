@@ -33,6 +33,8 @@ public class MyKafkaUtil {
     public static FlinkKafkaConsumer<List<TagKafkaInfo>> getKafkaListConsumer(List<String> topic, String groupId,String server) {
         Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, 1 * 60 * 1000L + "");
+        properties.setProperty(CommonClientConfigs.SESSION_TIMEOUT_MS_CONFIG, 1 * 60 * 1000L + "");
         //会开启一个后台线程每隔5s检测一下Kafka的分区情况,实现动态分区检测
        // properties.setProperty("flink.partition-discovery.interval-millis", "5000");
 //        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
@@ -73,6 +75,8 @@ public class MyKafkaUtil {
         Properties properties = new Properties();
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG,server);
+        properties.setProperty(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, 4 * 60 * 1000L + "");
+        properties.setProperty(CommonClientConfigs.SESSION_TIMEOUT_MS_CONFIG, 4 * 60 * 1000L + "");
         FlinkKafkaConsumer<TagKafkaInfo> kafkaConsumer = new FlinkKafkaConsumer<>(
                 topic,
                 new TagInfoDeserializationSchema(),

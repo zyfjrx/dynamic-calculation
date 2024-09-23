@@ -3,6 +3,7 @@ package com.byt.tagcalculate.func;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.byt.common.utils.BytTagUtil;
+import com.byt.common.utils.JdbcUtil;
 import com.byt.common.utils.QlexpressUtil;
 import com.byt.tagcalculate.pojo.TagKafkaInfo;
 import com.byt.tagcalculate.pojo.TagProperties;
@@ -14,6 +15,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
+import java.sql.Connection;
 import java.util.*;
 
 /**
@@ -29,7 +31,6 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
     private Set<String> keys;
     private ParameterTool parameterTool;
 
-
     public BroadcastProcessFunc(MapStateDescriptor<String, TagProperties> mapStateDescriptor) {
         this.mapStateDescriptor = mapStateDescriptor;
     }
@@ -42,23 +43,47 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
         keys = new HashSet<>();
         parameterTool = (ParameterTool)
                 getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+
+        // 预加载配置信息，从mysql查询一次
+        Connection connection = JdbcUtil.getConnection();
+        List<TagProperties> tagProperties = JdbcUtil.queryList(connection,
+                "select * from `byt_grid_data`.tag_conf",
+                TagProperties.class,
+                false);
+        for (TagProperties tagProperty : tagProperties) {
+            String key = tagProperty.byt_name + tagProperty.task_name;
+            bytInfoCache.put(key,tagProperty);
+            keys.add(key);
+            if (tagProperty.tag_name.contains(parameterTool.get("formula.tag.start")) &&
+                    tagProperty.tag_name.contains(parameterTool.get("formula.tag.end"))) {
+                Set<String> tagSet = QlexpressUtil.getTagSet(tagProperty.tag_name.trim());
+                hasTags.addAll(tagSet);
+            } else {
+                hasTags.add(tagProperty.tag_name.trim());
+            }
+            Set<String> strings = bytInfoCache.keySet();
+            for (String string : strings) {
+                System.out.println(string+"---"+bytInfoCache.get(string));
+            }
+
+            connection.close();
+        }
     }
 
     @Override
     public void processElement(List<TagKafkaInfo> value, BroadcastProcessFunction<List<TagKafkaInfo>, String, List<TagKafkaInfo>>.ReadOnlyContext ctx, Collector<List<TagKafkaInfo>> out) throws Exception {
         ReadOnlyBroadcastState<String, TagProperties> broadcastState = ctx.getBroadcastState(mapStateDescriptor);
         // 获取广播配置信息 封装为map
+        // 获取广播配置信息 封装为map
         for (String key : keys) {
             TagProperties tagProperties = broadcastState.get(key);
-            if (tagProperties != null){
-                bytInfoCache.put(key, tagProperties);
+            TagProperties tagPropertiesMap = bytInfoCache.get(key);
+            if (tagProperties != null || tagPropertiesMap != null){
+                if (tagProperties == null) {
+                    tagProperties = tagPropertiesMap;
+                    bytInfoCache.put(key, tagProperties);
+                }
             }
-            //System.out.println(tagProperties);
-        }
-        // 主流数据先到等待配置3s
-        if (bytInfoCache.keySet().size() == 0) {
-            System.out.println("wait~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            Thread.sleep(3000L);
         }
 
         // 调用工具类，处理补充信息
@@ -98,6 +123,13 @@ public class BroadcastProcessFunc extends BroadcastProcessFunction<List<TagKafka
                 String beforeKey = before.byt_name + before.task_name;
                 keys.remove(beforeKey);
                 keys.add(key);
+                if (after.tag_name.contains(parameterTool.get("formula.tag.start")) &&
+                        after.tag_name.contains(parameterTool.get("formula.tag.end"))) {
+                    Set<String> tagSet = QlexpressUtil.getTagSet(after.tag_name.trim());
+                    hasTags.addAll(tagSet);
+                } else {
+                    hasTags.add(after.tag_name.trim());
+                }
                 broadcastState.remove(beforeKey);
                 broadcastState.put(key, after);
             }

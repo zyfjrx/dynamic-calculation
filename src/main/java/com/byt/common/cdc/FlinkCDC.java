@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public class FlinkCDC {
 
-        public static MySqlSource<String> getMysqlSource(String host,Integer port,String username,String password,String database,String table){
+        public static MySqlSource<String> getMysqlSource(String host,Integer port,String username,String password,String database,String[] table){
             return MySqlSource
                     .<String>builder()
                     .hostname(host)

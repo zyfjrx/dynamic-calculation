@@ -8,8 +8,10 @@ package test;
 public class Test1 {
     public static void main(String[] args) {
 
-        String string = String.valueOf(1709190025006L);
-        String substring = string.substring(0, string.length() - 4);
-        System.out.println(substring);
+        String regex = "[/:.]";
+        String replacement = "_";
+
+        String result = "ooomvvvvvvv".replaceAll(regex, replacement);
+        System.out.println(result);
     }
 }
