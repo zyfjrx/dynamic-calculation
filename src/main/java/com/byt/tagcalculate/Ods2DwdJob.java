@@ -24,6 +24,7 @@ import org.apache.flink.util.Collector;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -102,7 +103,12 @@ public class Ods2DwdJob {
                 });
 
         // sink kafka
-        resultDS.addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dwd.topic"), parameterTool.get("kafka.server")))
+        resultDS.addSink(
+                        MyKafkaUtil.getKafkaProducer(
+                                parameterTool.get("kafka.dwd.topic"),
+                                parameterTool.get("kafka.server"),
+                                UUID.randomUUID().toString())
+                )
                 .name("sink to kafka");
 
         //resultDS.print();

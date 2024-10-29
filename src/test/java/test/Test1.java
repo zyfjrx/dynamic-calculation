@@ -1,5 +1,8 @@
 package test;
 
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
 /**
  * @title:
  * @author: zhangyf
@@ -8,10 +11,8 @@ package test;
 public class Test1 {
     public static void main(String[] args) {
 
-        String regex = "[/:.]";
-        String replacement = "_";
 
-        String result = "ooomvvvvvvv".replaceAll(regex, replacement);
-        System.out.println(result);
+        System.out.println(UUID.nameUUIDFromBytes("ods".getBytes(StandardCharsets.UTF_8)).toString());
+        System.out.println(UUID.randomUUID().toString());
     }
 }

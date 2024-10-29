@@ -19,6 +19,7 @@ import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -65,7 +66,7 @@ public class Dws2PostJob {
             public String map(Tuple2<String, String> tuple2) throws Exception {
                 return tuple2.f1;
             }
-        }).addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dws.topic"),parameterTool.get("kafka.server")));
+        }).addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dws.topic"),parameterTool.get("kafka.server"), UUID.randomUUID().toString()));
         AsyncDataStream.orderedWait(postDS,new AsyncTagsPost(),10000, TimeUnit.MILLISECONDS,100);
         env.execute("post_arithmetic_job");
     }

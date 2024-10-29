@@ -112,10 +112,11 @@ public class MyKafkaUtil {
 
 
 
-    public static FlinkKafkaProducer<String> getKafkaProducer(String topic,String server) {
+    public static FlinkKafkaProducer<String> getKafkaProducer(String topic,String server,String transactionId) {
         Properties properties = new Properties();
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,server);
-        properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 15 * 60 * 1000L + "");
+        properties.setProperty(ProducerConfig.TRANSACTIONAL_ID_CONFIG,transactionId);
+        properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, 10 * 60 * 1000L + "");
         return new FlinkKafkaProducer<String>(
                 "DEFAULT_TOPIC",
                 new KafkaSerializationSchema<String>() {

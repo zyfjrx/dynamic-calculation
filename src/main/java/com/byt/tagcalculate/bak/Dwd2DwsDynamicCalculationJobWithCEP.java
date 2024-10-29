@@ -32,6 +32,7 @@ import org.apache.flink.util.OutputTag;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @title: DWS动态计算
@@ -489,7 +490,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
                 .name("dwd-union");
         //dwdResult.print("dwd>>>");
-        dwdResult.addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dwd.topic"),parameterTool.get("kafka.server")))
+        dwdResult.addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dwd.topic"),parameterTool.get("kafka.server"), UUID.randomUUID().toString()))
                 .name("dwd-sink");
 
         // union计算完成数据
@@ -506,7 +507,7 @@ public class Dwd2DwsDynamicCalculationJobWithCEP {
         // send to kafka
         dwsResult
                 .map(new MapPojo2JsonStr<TagKafkaInfo>())
-                .addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dws.topic"),parameterTool.get("kafka.server")))
+                .addSink(MyKafkaUtil.getKafkaProducer(parameterTool.get("kafka.dws.topic"),parameterTool.get("kafka.server"),UUID.randomUUID().toString()))
                 .name("dws-sink");
 
         dwsResult.print("dws<<<");
